@@ -36,8 +36,8 @@ export default function HomePage() {
       <Navbar />
 
       {/* Hero */}
-      <section className="flex flex-1 flex-col items-center justify-center px-6 py-24 text-center">
-        <h1 className="max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+      <section className="flex flex-1 flex-col items-center justify-center px-4 py-16 text-center sm:px-6 sm:py-24">
+        <h1 className="max-w-3xl text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
           Master DevOps,{" "}
           <span className="text-primary/80">One Day at a Time</span>
         </h1>
@@ -57,8 +57,8 @@ export default function HomePage() {
       </section>
 
       {/* Value Props */}
-      <section className="border-t bg-muted/40 px-6 py-20">
-        <div className="mx-auto grid max-w-5xl gap-8 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="border-t bg-muted/40 px-4 py-12 sm:px-6 sm:py-20">
+        <div className="mx-auto grid max-w-5xl gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {valueProps.map((prop) => (
             <div
               key={prop.title}
@@ -77,7 +77,7 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t px-6 py-8 text-center text-sm text-muted-foreground">
+      <footer className="border-t px-4 py-6 text-center text-sm text-muted-foreground sm:px-6 sm:py-8">
         DevOps Tutor &mdash; Built for engineers who ship.
       </footer>
     </div>

@@ -171,8 +171,43 @@ export function ExamPlayer({ exam, subjectSlug }: ExamPlayerProps) {
         />
       </div>
 
+      {/* Mobile question nav: horizontal scrollable */}
+      <div className="md:hidden">
+        <div className="mb-1 flex items-center justify-between">
+          <p className="text-xs font-medium text-muted-foreground">
+            {answeredCount}/{exam.questions.length} answered
+          </p>
+        </div>
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          {exam.questions.map((q, i) => {
+            const isAnswered = answers[q.id] && answers[q.id].length > 0;
+            const isFlagged = flagged.has(q.id);
+            const isCurrent = i === currentIndex;
+            return (
+              <button
+                key={q.id}
+                onClick={() => setCurrentIndex(i)}
+                className={cn(
+                  "relative flex h-8 w-8 shrink-0 items-center justify-center rounded text-xs font-medium transition-colors",
+                  isCurrent
+                    ? "bg-primary text-primary-foreground"
+                    : isAnswered
+                    ? "bg-primary/20 text-primary"
+                    : "bg-muted text-muted-foreground"
+                )}
+              >
+                {i + 1}
+                {isFlagged && (
+                  <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-yellow-500" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       <div className="flex gap-6">
-        {/* Sidebar: question navigation */}
+        {/* Sidebar: question navigation (desktop only) */}
         <div className="hidden w-48 shrink-0 md:block">
           <div className="sticky top-8 space-y-3">
             <p className="text-xs font-medium text-muted-foreground">
@@ -243,7 +278,7 @@ export function ExamPlayer({ exam, subjectSlug }: ExamPlayerProps) {
           />
 
           {/* Actions */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex gap-2">
               <Button
                 variant="outline"
