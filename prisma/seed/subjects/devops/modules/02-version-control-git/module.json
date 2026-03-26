@@ -1,0 +1,8 @@
+{
+  "slug": "version-control-git",
+  "title": "Version Control with Git",
+  "description": "Master Git from basics to advanced workflows, plus GitHub Actions for CI/CD automation.",
+  "weekStart": 3,
+  "weekEnd": 4,
+  "sortOrder": 2
+}

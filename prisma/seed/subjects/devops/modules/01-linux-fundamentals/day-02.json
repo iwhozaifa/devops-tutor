@@ -1,0 +1,130 @@
+{
+  "dayNumber": 2,
+  "title": "File System Navigation & Permissions",
+  "summary": "Understand the Linux file system hierarchy, file types, ownership, and the permission model. Learn to use chmod, chown, and read permission strings to secure files and directories.",
+  "resources": [
+    {
+      "title": "Linux Journey - File System",
+      "url": "https://linuxjourney.com/lesson/filesystem-hierarchy",
+      "type": "COURSE",
+      "source": "Linux Journey",
+      "duration": "20 min",
+      "isRequired": true,
+      "sortOrder": 1
+    },
+    {
+      "title": "Linux Journey - Permissions",
+      "url": "https://linuxjourney.com/lesson/file-permissions",
+      "type": "COURSE",
+      "source": "Linux Journey",
+      "duration": "25 min",
+      "isRequired": true,
+      "sortOrder": 2
+    },
+    {
+      "title": "The Linux Command Line - Chapters 4 & 9: Permissions",
+      "url": "https://linuxcommand.org/tlcl.php",
+      "type": "ARTICLE",
+      "source": "linuxcommand.org",
+      "duration": "1h",
+      "isRequired": true,
+      "sortOrder": 3
+    },
+    {
+      "title": "Linux File Permissions Explained",
+      "url": "https://www.youtube.com/watch?v=LnKoncbQBsM",
+      "type": "VIDEO",
+      "source": "YouTube (Engineer Man)",
+      "duration": "10 min",
+      "isRequired": false,
+      "sortOrder": 4
+    },
+    {
+      "title": "Filesystem Hierarchy Standard",
+      "url": "https://refspecs.linuxfoundation.org/FHS_3.0/fhs-3.0.html",
+      "type": "DOCS",
+      "source": "Linux Foundation",
+      "duration": "Reference",
+      "isRequired": false,
+      "sortOrder": 5
+    }
+  ],
+  "quiz": {
+    "title": "Day 2 Quiz: File System & Permissions",
+    "passingScore": 70,
+    "questions": [
+      {
+        "questionText": "What does the permission string 'rwxr-xr--' mean?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "The permission string is split into three groups of three: owner (rwx = read/write/execute), group (r-x = read/execute), others (r-- = read only).",
+        "options": [
+          {"id": "a", "text": "Owner: read/write/execute, Group: read/execute, Others: read only", "isCorrect": true},
+          {"id": "b", "text": "Everyone has read, write, and execute permissions", "isCorrect": false},
+          {"id": "c", "text": "Owner: read only, Group: read/write, Others: all permissions", "isCorrect": false},
+          {"id": "d", "text": "Owner: read/write, Group: execute, Others: none", "isCorrect": false}
+        ],
+        "sortOrder": 1
+      },
+      {
+        "questionText": "What does 'chmod 755 script.sh' set the permissions to?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "In octal notation, 7 = rwx (4+2+1), 5 = r-x (4+0+1). So 755 = owner: rwx, group: r-x, others: r-x.",
+        "options": [
+          {"id": "a", "text": "rwxrwxrwx", "isCorrect": false},
+          {"id": "b", "text": "rwxr-xr-x", "isCorrect": true},
+          {"id": "c", "text": "rw-r--r--", "isCorrect": false},
+          {"id": "d", "text": "rwx------", "isCorrect": false}
+        ],
+        "sortOrder": 2
+      },
+      {
+        "questionText": "Which directory typically contains system configuration files?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "/etc is the standard directory for system-wide configuration files in Linux, such as /etc/hosts, /etc/passwd, and /etc/ssh/sshd_config.",
+        "options": [
+          {"id": "a", "text": "/var", "isCorrect": false},
+          {"id": "b", "text": "/opt", "isCorrect": false},
+          {"id": "c", "text": "/etc", "isCorrect": true},
+          {"id": "d", "text": "/sys", "isCorrect": false}
+        ],
+        "sortOrder": 3
+      },
+      {
+        "questionText": "What command changes the owner of a file?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "The 'chown' command changes the owner (and optionally the group) of a file. For example: chown user:group file.txt",
+        "options": [
+          {"id": "a", "text": "chmod", "isCorrect": false},
+          {"id": "b", "text": "chown", "isCorrect": true},
+          {"id": "c", "text": "chgrp", "isCorrect": false},
+          {"id": "d", "text": "usermod", "isCorrect": false}
+        ],
+        "sortOrder": 4
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "title": "Master File Permissions",
+      "description": "1. Create a file called `secret.txt` with `echo 'confidential data' > secret.txt`\n2. Check its permissions with `ls -l secret.txt`\n3. Remove all permissions for group and others: `chmod go-rwx secret.txt`\n4. Verify with `ls -l`\n5. Create a script file: `echo '#!/bin/bash' > hello.sh && echo 'echo Hello DevOps' >> hello.sh`\n6. Try running it with `./hello.sh` — observe the permission denied error\n7. Make it executable: `chmod +x hello.sh`\n8. Run it again: `./hello.sh`\n9. Practice with octal: set permissions to 644, then 755, and verify each time",
+      "difficulty": "BEGINNER",
+      "xpReward": 40,
+      "hints": [
+        "Remember: 4=read, 2=write, 1=execute. Add them for each position.",
+        "Use 'stat' command for a more detailed view of file permissions"
+      ],
+      "sortOrder": 1
+    },
+    {
+      "title": "Explore the Filesystem Hierarchy",
+      "description": "1. Navigate to `/` and list the contents\n2. For each key directory, use `ls` to see what is inside:\n   - `/etc` — configuration files\n   - `/var/log` — log files\n   - `/tmp` — temporary files\n   - `/usr/bin` — user programs\n   - `/home` — user home directories\n3. Read a config file: `cat /etc/hostname`\n4. Check disk usage: `df -h`\n5. Check directory sizes: `du -sh /var/log/*`\n6. Find large files: `find /var/log -size +1M -type f 2>/dev/null`",
+      "difficulty": "BEGINNER",
+      "xpReward": 35,
+      "hints": [
+        "The '-h' flag means human-readable (shows KB, MB, GB instead of bytes)",
+        "2>/dev/null redirects error messages so they do not clutter your output"
+      ],
+      "sortOrder": 2
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "slug": "linux-fundamentals",
+  "title": "Linux Fundamentals",
+  "description": "Core Linux skills every DevOps engineer needs — command line, file systems, text processing, scripting, and networking basics.",
+  "weekStart": 1,
+  "weekEnd": 2,
+  "sortOrder": 1
+}

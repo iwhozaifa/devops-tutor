@@ -1,0 +1,118 @@
+{
+  "dayNumber": 11,
+  "title": "Git Workflows (GitFlow, Trunk-based)",
+  "summary": "Explore different Git branching strategies used by teams. Compare GitFlow, GitHub Flow, and trunk-based development. Understand when to use each approach and how they affect CI/CD pipelines.",
+  "resources": [
+    {
+      "title": "A Successful Git Branching Model (GitFlow)",
+      "url": "https://nvie.com/posts/a-successful-git-branching-model/",
+      "type": "ARTICLE",
+      "source": "nvie.com (Vincent Driessen)",
+      "duration": "20 min",
+      "isRequired": true,
+      "sortOrder": 1
+    },
+    {
+      "title": "GitHub Flow Guide",
+      "url": "https://docs.github.com/en/get-started/using-github/github-flow",
+      "type": "DOCS",
+      "source": "GitHub",
+      "duration": "15 min",
+      "isRequired": true,
+      "sortOrder": 2
+    },
+    {
+      "title": "Trunk Based Development",
+      "url": "https://trunkbaseddevelopment.com/",
+      "type": "ARTICLE",
+      "source": "trunkbaseddevelopment.com",
+      "duration": "30 min",
+      "isRequired": true,
+      "sortOrder": 3
+    },
+    {
+      "title": "Git Flow vs GitHub Flow vs Trunk-based",
+      "url": "https://www.youtube.com/watch?v=aJnFGMclhU8",
+      "type": "VIDEO",
+      "source": "YouTube (DevOps Toolkit)",
+      "duration": "15 min",
+      "isRequired": false,
+      "sortOrder": 4
+    },
+    {
+      "title": "Atlassian - Comparing Workflows",
+      "url": "https://www.atlassian.com/git/tutorials/comparing-workflows",
+      "type": "ARTICLE",
+      "source": "Atlassian",
+      "duration": "30 min",
+      "isRequired": false,
+      "sortOrder": 5
+    }
+  ],
+  "quiz": {
+    "title": "Day 11 Quiz: Git Workflows",
+    "passingScore": 70,
+    "questions": [
+      {
+        "questionText": "In GitFlow, which branch contains the latest production release?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "In GitFlow, 'main' (or 'master') always reflects the production-ready state. The 'develop' branch is where features are integrated for the next release.",
+        "options": [
+          {"id": "a", "text": "develop", "isCorrect": false},
+          {"id": "b", "text": "main/master", "isCorrect": true},
+          {"id": "c", "text": "release", "isCorrect": false},
+          {"id": "d", "text": "staging", "isCorrect": false}
+        ],
+        "sortOrder": 1
+      },
+      {
+        "questionText": "What is the core principle of trunk-based development?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "Trunk-based development advocates that developers integrate small, frequent changes directly to the main branch (trunk). Short-lived feature branches (< 1-2 days) may be used but long-lived branches are avoided.",
+        "options": [
+          {"id": "a", "text": "Always use long-lived feature branches", "isCorrect": false},
+          {"id": "b", "text": "Developers commit small, frequent changes directly to main", "isCorrect": true},
+          {"id": "c", "text": "Only one developer works on the codebase at a time", "isCorrect": false},
+          {"id": "d", "text": "All changes must go through a release branch", "isCorrect": false}
+        ],
+        "sortOrder": 2
+      },
+      {
+        "questionText": "In GitHub Flow, what is the primary mechanism for code review?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "GitHub Flow uses pull requests as the primary mechanism for code review. Developers create a branch, open a PR, get reviews, and merge when approved.",
+        "options": [
+          {"id": "a", "text": "Email patches to team leads", "isCorrect": false},
+          {"id": "b", "text": "Pull requests", "isCorrect": true},
+          {"id": "c", "text": "Merge commits", "isCorrect": false},
+          {"id": "d", "text": "Git tags", "isCorrect": false}
+        ],
+        "sortOrder": 3
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "title": "Simulate a GitFlow Workflow",
+      "description": "1. Create a new repository: `mkdir gitflow-demo && cd gitflow-demo && git init`\n2. Create initial commit on main: `echo 'v1.0' > version.txt && git add . && git commit -m 'Initial release v1.0'`\n3. Create the develop branch: `git switch -c develop`\n4. Create a feature branch: `git switch -c feature/user-auth`\n5. Add a feature file, commit, and merge back to develop:\n   ```\n   echo 'auth module' > auth.sh\n   git add . && git commit -m 'Add user authentication'\n   git switch develop && git merge --no-ff feature/user-auth\n   ```\n6. Create a release branch: `git switch -c release/1.1`\n7. Bump version: `echo 'v1.1' > version.txt && git add . && git commit -m 'Bump version to 1.1'`\n8. Merge to main and tag: `git switch main && git merge --no-ff release/1.1 && git tag v1.1`\n9. Merge back to develop: `git switch develop && git merge --no-ff release/1.1`\n10. View the full graph: `git log --oneline --graph --all`",
+      "difficulty": "INTERMEDIATE",
+      "xpReward": 60,
+      "hints": [
+        "Use --no-ff (no fast-forward) to preserve branch history in the merge",
+        "Tags mark release points: git tag -a v1.1 -m 'Release 1.1'"
+      ],
+      "sortOrder": 1
+    },
+    {
+      "title": "Practice GitHub Flow",
+      "description": "1. In an existing GitHub repository, create an issue describing a feature\n2. Create a branch named after the issue: `git switch -c feature/42-add-logging`\n3. Make your changes in small, logical commits\n4. Push the branch: `git push -u origin feature/42-add-logging`\n5. Open a Pull Request on GitHub:\n   - Reference the issue in the description (e.g., 'Closes #42')\n   - Add a clear description of changes\n   - Request a review (or review your own for practice)\n6. After approval, merge via the GitHub UI\n7. Pull the updated main locally: `git pull origin main`\n8. Delete the remote branch: `git push origin --delete feature/42-add-logging`\n9. Delete the local branch: `git branch -d feature/42-add-logging`\n10. Compare this workflow to GitFlow — which feels simpler?",
+      "difficulty": "INTERMEDIATE",
+      "xpReward": 50,
+      "hints": [
+        "Using 'Closes #42' in a PR description automatically closes the issue when the PR is merged",
+        "GitHub Flow works best with CI/CD because every merge to main should be deployable"
+      ],
+      "sortOrder": 2
+    }
+  ]
+}

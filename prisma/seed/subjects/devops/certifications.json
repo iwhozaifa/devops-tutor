@@ -1,0 +1,51 @@
+[
+  {
+    "slug": "cka",
+    "title": "Certified Kubernetes Administrator (CKA)",
+    "provider": "Cloud Native Computing Foundation (CNCF)",
+    "description": "The CKA exam certifies that you have the skills, knowledge, and competency to perform the responsibilities of a Kubernetes administrator. Covers cluster architecture, workloads, services, networking, storage, and troubleshooting.",
+    "examUrl": "https://training.linuxfoundation.org/certification/certified-kubernetes-administrator-cka/",
+    "cost": "$395",
+    "duration": "2 hours",
+    "passingScore": 66,
+    "format": "Performance-based (hands-on lab)",
+    "prerequisites": [
+      "Strong Linux command-line skills",
+      "Understanding of container fundamentals",
+      "Basic networking knowledge"
+    ],
+    "domains": [
+      {"name": "Cluster Architecture, Installation & Configuration", "weight": 25},
+      {"name": "Workloads & Scheduling", "weight": 15},
+      {"name": "Services & Networking", "weight": 20},
+      {"name": "Storage", "weight": 10},
+      {"name": "Troubleshooting", "weight": 30}
+    ],
+    "sortOrder": 1
+  },
+  {
+    "slug": "aws-devops-professional",
+    "title": "AWS Certified DevOps Engineer – Professional",
+    "provider": "Amazon Web Services (AWS)",
+    "description": "Validates technical expertise in provisioning, operating, and managing distributed application systems on the AWS platform. Covers SDLC automation, configuration management, monitoring and logging, policies and standards automation, incident and event response, and high availability and fault tolerance.",
+    "examUrl": "https://aws.amazon.com/certification/certified-devops-engineer-professional/",
+    "cost": "$300",
+    "duration": "180 minutes",
+    "passingScore": 750,
+    "format": "Multiple choice and multiple response",
+    "prerequisites": [
+      "AWS Associate-level certification recommended",
+      "2+ years provisioning and operating AWS environments",
+      "Experience with CI/CD pipelines on AWS"
+    ],
+    "domains": [
+      {"name": "SDLC Automation", "weight": 22},
+      {"name": "Configuration Management and Infrastructure as Code", "weight": 17},
+      {"name": "Monitoring and Logging", "weight": 15},
+      {"name": "Policies and Standards Automation", "weight": 10},
+      {"name": "Incident and Event Response", "weight": 18},
+      {"name": "High Availability, Fault Tolerance, and Disaster Recovery", "weight": 18}
+    ],
+    "sortOrder": 2
+  }
+]

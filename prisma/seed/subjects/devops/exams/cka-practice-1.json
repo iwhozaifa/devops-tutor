@@ -1,0 +1,270 @@
+{
+  "certificationSlug": "cka",
+  "title": "CKA Practice Exam 1",
+  "description": "A 20-question practice exam covering all CKA domains. Time limit: 60 minutes.",
+  "timeLimit": 60,
+  "passingScore": 66,
+  "questionCount": 20,
+  "questions": [
+    {
+      "questionText": "Which component of the Kubernetes control plane is responsible for persisting cluster state?",
+      "questionType": "SINGLE_CHOICE",
+      "explanation": "etcd is the consistent and highly-available key-value store used as Kubernetes' backing store for all cluster data. All cluster state, including node information, pod specs, ConfigMaps, Secrets, and service accounts, is stored in etcd.",
+      "domain": "Cluster Architecture",
+      "options": [
+        { "id": "a", "text": "kube-apiserver", "isCorrect": false },
+        { "id": "b", "text": "etcd", "isCorrect": true },
+        { "id": "c", "text": "kube-controller-manager", "isCorrect": false },
+        { "id": "d", "text": "kube-scheduler", "isCorrect": false }
+      ],
+      "sortOrder": 1
+    },
+    {
+      "questionText": "You need to take a snapshot of the etcd cluster for backup purposes. Which command correctly creates an etcd snapshot?",
+      "questionType": "SINGLE_CHOICE",
+      "explanation": "The ETCDCTL_API=3 environment variable tells etcdctl to use the v3 API. The 'snapshot save' subcommand creates a point-in-time snapshot. You must provide the endpoint, CA certificate, client certificate, and client key for authentication to the etcd server.",
+      "domain": "Cluster Architecture",
+      "options": [
+        { "id": "a", "text": "etcdctl backup --data-dir /var/lib/etcd --backup-dir /tmp/etcd-backup", "isCorrect": false },
+        { "id": "b", "text": "ETCDCTL_API=3 etcdctl snapshot save /tmp/etcd-backup.db --endpoints=https://127.0.0.1:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernetes/pki/etcd/server.key", "isCorrect": true },
+        { "id": "c", "text": "kubectl exec etcd-master -- etcdctl snapshot save /tmp/etcd-backup.db", "isCorrect": false },
+        { "id": "d", "text": "etcdctl --version=3 save-snapshot /tmp/etcd-backup.db", "isCorrect": false }
+      ],
+      "sortOrder": 2
+    },
+    {
+      "questionText": "When initializing a new Kubernetes cluster with kubeadm, which file contains the static pod manifests for control plane components?",
+      "questionType": "SINGLE_CHOICE",
+      "explanation": "kubeadm deploys control plane components (kube-apiserver, kube-controller-manager, kube-scheduler) as static pods. The kubelet watches the /etc/kubernetes/manifests/ directory and automatically creates pods for any manifests placed there.",
+      "domain": "Cluster Architecture",
+      "options": [
+        { "id": "a", "text": "/etc/kubernetes/config/", "isCorrect": false },
+        { "id": "b", "text": "/var/lib/kubelet/pods/", "isCorrect": false },
+        { "id": "c", "text": "/etc/kubernetes/manifests/", "isCorrect": true },
+        { "id": "d", "text": "/opt/kubernetes/static-pods/", "isCorrect": false }
+      ],
+      "sortOrder": 3
+    },
+    {
+      "questionText": "Which kubeadm command is used to generate a new token and print the join command for adding a worker node to the cluster?",
+      "questionType": "SINGLE_CHOICE",
+      "explanation": "The 'kubeadm token create --print-join-command' generates a new bootstrap token and outputs the complete 'kubeadm join' command with the token and CA certificate hash. This is the standard way to add new nodes to an existing cluster.",
+      "domain": "Cluster Architecture",
+      "options": [
+        { "id": "a", "text": "kubeadm join --generate-token", "isCorrect": false },
+        { "id": "b", "text": "kubeadm token create --print-join-command", "isCorrect": true },
+        { "id": "c", "text": "kubeadm init --print-join-token", "isCorrect": false },
+        { "id": "d", "text": "kubectl create token --for-join", "isCorrect": false }
+      ],
+      "sortOrder": 4
+    },
+    {
+      "questionText": "You need to upgrade a kubeadm cluster from v1.29 to v1.30. What is the correct order of operations?",
+      "questionType": "SINGLE_CHOICE",
+      "explanation": "The correct upgrade order is: first upgrade kubeadm on the control plane node, then run 'kubeadm upgrade apply' to update the control plane components, then upgrade kubelet and kubectl on the control plane node, and finally repeat the kubelet/kubectl upgrade on each worker node. You should drain nodes before upgrading their kubelet.",
+      "domain": "Cluster Architecture",
+      "options": [
+        { "id": "a", "text": "Upgrade kubelet on all nodes, then upgrade kubeadm, then run kubeadm upgrade apply", "isCorrect": false },
+        { "id": "b", "text": "Upgrade kubeadm, run kubeadm upgrade apply on control plane, then upgrade kubelet and kubectl on all nodes", "isCorrect": true },
+        { "id": "c", "text": "Run kubeadm upgrade apply first, then upgrade kubeadm and kubelet simultaneously", "isCorrect": false },
+        { "id": "d", "text": "Upgrade kubectl on all nodes, then kubeadm, then kubelet", "isCorrect": false }
+      ],
+      "sortOrder": 5
+    },
+    {
+      "questionText": "A Deployment named 'web-app' has 3 replicas. You need to update the image to 'nginx:1.25' and record the change. Which command achieves this?",
+      "questionType": "SINGLE_CHOICE",
+      "explanation": "The 'kubectl set image' command updates the container image of a resource. The '--record' flag (deprecated but still functional) annotates the resource with the command that made the change, which is useful for rollback history. The format is 'container-name=image:tag'.",
+      "domain": "Workloads & Scheduling",
+      "options": [
+        { "id": "a", "text": "kubectl set image deployment/web-app nginx=nginx:1.25 --record", "isCorrect": true },
+        { "id": "b", "text": "kubectl update deployment web-app --image=nginx:1.25", "isCorrect": false },
+        { "id": "c", "text": "kubectl patch deployment web-app -p '{\"image\": \"nginx:1.25\"}'", "isCorrect": false },
+        { "id": "d", "text": "kubectl rollout update deployment/web-app nginx:1.25", "isCorrect": false }
+      ],
+      "sortOrder": 6
+    },
+    {
+      "questionText": "Which field in a Pod spec ensures that a pod is scheduled only on nodes with the label 'disk=ssd'?",
+      "questionType": "SINGLE_CHOICE",
+      "explanation": "nodeSelector is the simplest way to constrain pods to nodes with specific labels. It specifies a map of key-value pairs that must match node labels for the pod to be scheduled there. nodeAffinity provides more expressive rules but nodeSelector is sufficient for simple label matching.",
+      "domain": "Workloads & Scheduling",
+      "options": [
+        { "id": "a", "text": "spec.nodeName: ssd-node", "isCorrect": false },
+        { "id": "b", "text": "spec.nodeSelector: { disk: ssd }", "isCorrect": true },
+        { "id": "c", "text": "spec.affinity.nodeLabel: disk=ssd", "isCorrect": false },
+        { "id": "d", "text": "spec.tolerations: [{ key: disk, value: ssd }]", "isCorrect": false }
+      ],
+      "sortOrder": 7
+    },
+    {
+      "questionText": "A pod has resource requests of 256Mi memory and 250m CPU. What does this mean for scheduling?",
+      "questionType": "SINGLE_CHOICE",
+      "explanation": "Resource requests define the minimum amount of resources a container needs. The scheduler uses requests to decide which node to place the pod on -- it ensures the node has at least the requested amount available. Requests do not impose a hard ceiling; that is what resource limits are for.",
+      "domain": "Workloads & Scheduling",
+      "options": [
+        { "id": "a", "text": "The pod will be terminated if it exceeds 256Mi memory", "isCorrect": false },
+        { "id": "b", "text": "The scheduler will place the pod on a node with at least 256Mi memory and 250m CPU available", "isCorrect": true },
+        { "id": "c", "text": "The pod is guaranteed exactly 256Mi memory and 250m CPU at all times", "isCorrect": false },
+        { "id": "d", "text": "The node will reserve 256Mi memory exclusively for this pod, preventing other pods from using it", "isCorrect": false }
+      ],
+      "sortOrder": 8
+    },
+    {
+      "questionText": "Which kubectl command can you use to create a ClusterRole that allows listing and getting pods across all namespaces?",
+      "questionType": "SINGLE_CHOICE",
+      "explanation": "The 'kubectl create clusterrole' command creates a ClusterRole (cluster-scoped). The '--verb' flag specifies the allowed API actions, and '--resource' specifies the target resources. A ClusterRole with 'get' and 'list' verbs on 'pods' allows reading pod information across all namespaces when bound with a ClusterRoleBinding.",
+      "domain": "Cluster Architecture",
+      "options": [
+        { "id": "a", "text": "kubectl create role pod-reader --verb=get,list --resource=pods --all-namespaces", "isCorrect": false },
+        { "id": "b", "text": "kubectl create clusterrole pod-reader --verb=get,list --resource=pods", "isCorrect": true },
+        { "id": "c", "text": "kubectl auth create-role pod-reader --permissions=get,list --type=pods", "isCorrect": false },
+        { "id": "d", "text": "kubectl apply -f clusterrole --verb=get,list --resource=pods", "isCorrect": false }
+      ],
+      "sortOrder": 9
+    },
+    {
+      "questionText": "You need to expose a Deployment named 'frontend' on port 80 and make it accessible from outside the cluster. Which Service type should you use?",
+      "questionType": "SINGLE_CHOICE",
+      "explanation": "A NodePort service exposes the service on each node's IP at a static port (30000-32767 by default). This makes the service accessible from outside the cluster via <NodeIP>:<NodePort>. ClusterIP is only reachable within the cluster. LoadBalancer also works but requires cloud provider support. ExternalName maps to a DNS name and does not expose pods.",
+      "domain": "Services & Networking",
+      "options": [
+        { "id": "a", "text": "ClusterIP", "isCorrect": false },
+        { "id": "b", "text": "NodePort", "isCorrect": true },
+        { "id": "c", "text": "ExternalName", "isCorrect": false },
+        { "id": "d", "text": "Headless", "isCorrect": false }
+      ],
+      "sortOrder": 10
+    },
+    {
+      "questionText": "What is the correct DNS name to access a Service named 'db-service' in the namespace 'production' from a pod in the 'staging' namespace?",
+      "questionType": "SINGLE_CHOICE",
+      "explanation": "Kubernetes DNS creates records for services in the format <service-name>.<namespace>.svc.cluster.local. To reach a service in a different namespace, you must include at least the namespace: 'db-service.production' or the full FQDN 'db-service.production.svc.cluster.local'. Just 'db-service' would resolve to the staging namespace's service.",
+      "domain": "Services & Networking",
+      "options": [
+        { "id": "a", "text": "db-service", "isCorrect": false },
+        { "id": "b", "text": "db-service.production.svc.cluster.local", "isCorrect": true },
+        { "id": "c", "text": "production.db-service.cluster.local", "isCorrect": false },
+        { "id": "d", "text": "db-service.svc.production.cluster.local", "isCorrect": false }
+      ],
+      "sortOrder": 11
+    },
+    {
+      "questionText": "Which NetworkPolicy spec would deny all ingress traffic to pods with the label 'app: secure-api' in the 'default' namespace?",
+      "questionType": "SINGLE_CHOICE",
+      "explanation": "A NetworkPolicy with a podSelector matching 'app: secure-api' and policyTypes including 'Ingress' but with an empty ingress list (ingress: []) will deny all incoming traffic to those pods. If the ingress field is omitted entirely, it defaults to allowing all traffic. The empty array explicitly means no ingress is allowed.",
+      "domain": "Services & Networking",
+      "options": [
+        { "id": "a", "text": "podSelector: {matchLabels: {app: secure-api}}, policyTypes: [Ingress], ingress: []", "isCorrect": true },
+        { "id": "b", "text": "podSelector: {matchLabels: {app: secure-api}}, policyTypes: [Ingress, Egress]", "isCorrect": false },
+        { "id": "c", "text": "podSelector: {}, policyTypes: [Ingress], ingress: [{from: [{podSelector: {matchLabels: {app: secure-api}}}]}]", "isCorrect": false },
+        { "id": "d", "text": "podSelector: {matchLabels: {app: secure-api}}, deny: all", "isCorrect": false }
+      ],
+      "sortOrder": 12
+    },
+    {
+      "questionText": "You are creating an Ingress resource. Which annotation is commonly used to specify the Ingress controller class when not using the ingressClassName field?",
+      "questionType": "SINGLE_CHOICE",
+      "explanation": "The annotation 'kubernetes.io/ingress.class' was the original way to specify which Ingress controller should handle a given Ingress resource. While the newer 'spec.ingressClassName' field is preferred in Kubernetes 1.18+, the annotation is still widely used for backward compatibility.",
+      "domain": "Services & Networking",
+      "options": [
+        { "id": "a", "text": "nginx.ingress.kubernetes.io/controller", "isCorrect": false },
+        { "id": "b", "text": "kubernetes.io/ingress.class", "isCorrect": true },
+        { "id": "c", "text": "ingress.kubernetes.io/type", "isCorrect": false },
+        { "id": "d", "text": "kubernetes.io/ingress-controller", "isCorrect": false }
+      ],
+      "sortOrder": 13
+    },
+    {
+      "questionText": "What is the difference between a PersistentVolume (PV) and a PersistentVolumeClaim (PVC)?",
+      "questionType": "SINGLE_CHOICE",
+      "explanation": "A PersistentVolume is a cluster-level resource representing a piece of storage provisioned by an administrator or dynamically via a StorageClass. A PersistentVolumeClaim is a request for storage by a user/pod. The PVC binds to a PV that satisfies its requirements (size, access mode, storage class). This separation allows users to consume storage without knowing the underlying infrastructure details.",
+      "domain": "Storage",
+      "options": [
+        { "id": "a", "text": "PV is namespace-scoped while PVC is cluster-scoped", "isCorrect": false },
+        { "id": "b", "text": "PV represents provisioned storage in the cluster, while PVC is a request for storage by a pod", "isCorrect": true },
+        { "id": "c", "text": "PV can only be used with local storage, while PVC supports cloud storage", "isCorrect": false },
+        { "id": "d", "text": "PV and PVC are identical resources with different names for backward compatibility", "isCorrect": false }
+      ],
+      "sortOrder": 14
+    },
+    {
+      "questionText": "A PersistentVolumeClaim has an accessMode of 'ReadWriteOnce'. What does this mean?",
+      "questionType": "SINGLE_CHOICE",
+      "explanation": "ReadWriteOnce (RWO) means the volume can be mounted as read-write by a single node. Multiple pods on the same node can still access it, but it cannot be mounted on multiple nodes simultaneously. ReadWriteMany (RWX) allows multi-node access, and ReadOnlyMany (ROX) allows read-only multi-node access.",
+      "domain": "Storage",
+      "options": [
+        { "id": "a", "text": "The volume can be mounted as read-write by only one pod in the entire cluster", "isCorrect": false },
+        { "id": "b", "text": "The volume can be mounted as read-write by a single node at a time", "isCorrect": true },
+        { "id": "c", "text": "The volume supports only one write operation at a time", "isCorrect": false },
+        { "id": "d", "text": "The volume can be read and written once, then becomes read-only", "isCorrect": false }
+      ],
+      "sortOrder": 15
+    },
+    {
+      "questionText": "A node in your cluster is showing 'NotReady' status. Which is the first step to troubleshoot?",
+      "questionType": "SINGLE_CHOICE",
+      "explanation": "The 'kubectl describe node' command shows conditions, events, allocated resources, and system information for the node. Checking node conditions (MemoryPressure, DiskPressure, PIDPressure, Ready) and recent events will indicate why the node is NotReady. Common causes include kubelet not running, network issues, or resource exhaustion.",
+      "domain": "Troubleshooting",
+      "options": [
+        { "id": "a", "text": "Immediately delete the node and re-join it to the cluster", "isCorrect": false },
+        { "id": "b", "text": "Run 'kubectl describe node <node-name>' to check conditions and events", "isCorrect": true },
+        { "id": "c", "text": "Run 'kubectl drain <node-name>' to move all workloads off the node", "isCorrect": false },
+        { "id": "d", "text": "Restart the kube-apiserver on the control plane", "isCorrect": false }
+      ],
+      "sortOrder": 16
+    },
+    {
+      "questionText": "A pod is stuck in 'CrashLoopBackOff' state. Which command helps you identify the root cause?",
+      "questionType": "SINGLE_CHOICE",
+      "explanation": "The 'kubectl logs <pod-name> --previous' flag shows logs from the previous (crashed) container instance. Since the container is crash-looping, the current container may not have useful logs yet, but the previous instance's logs will show what error or failure caused the crash.",
+      "domain": "Troubleshooting",
+      "options": [
+        { "id": "a", "text": "kubectl get pod <pod-name> -o wide", "isCorrect": false },
+        { "id": "b", "text": "kubectl exec -it <pod-name> -- /bin/bash", "isCorrect": false },
+        { "id": "c", "text": "kubectl logs <pod-name> --previous", "isCorrect": true },
+        { "id": "d", "text": "kubectl top pod <pod-name>", "isCorrect": false }
+      ],
+      "sortOrder": 17
+    },
+    {
+      "questionText": "You notice that a Deployment's new ReplicaSet has 0 available replicas while the old ReplicaSet still has all replicas. The pods in the new ReplicaSet show 'ImagePullBackOff'. What is the most likely cause?",
+      "questionType": "SINGLE_CHOICE",
+      "explanation": "ImagePullBackOff indicates that the kubelet cannot pull the container image. This is most commonly caused by an incorrect image name or tag, a private registry without proper imagePullSecrets configured, or the image simply not existing. The old ReplicaSet retains its replicas because the rolling update strategy keeps them running until new pods are ready.",
+      "domain": "Troubleshooting",
+      "options": [
+        { "id": "a", "text": "The node does not have enough resources to run new pods", "isCorrect": false },
+        { "id": "b", "text": "The container image specified in the new Deployment does not exist or credentials are missing", "isCorrect": true },
+        { "id": "c", "text": "The PersistentVolume claim for the pods is not bound", "isCorrect": false },
+        { "id": "d", "text": "The network policy is blocking the pods from starting", "isCorrect": false }
+      ],
+      "sortOrder": 18
+    },
+    {
+      "questionText": "You need to check the kubelet logs on a worker node to diagnose a scheduling issue. Which command would you use on a systemd-based node?",
+      "questionType": "SINGLE_CHOICE",
+      "explanation": "On systemd-based Linux distributions (which most modern Kubernetes deployments use), the kubelet runs as a systemd service. The 'journalctl -u kubelet' command retrieves the kubelet's logs from the systemd journal. The '-u' flag filters by the unit name. Adding '-f' follows the log in real time.",
+      "domain": "Troubleshooting",
+      "options": [
+        { "id": "a", "text": "kubectl logs kubelet", "isCorrect": false },
+        { "id": "b", "text": "cat /var/log/kubelet.log", "isCorrect": false },
+        { "id": "c", "text": "journalctl -u kubelet", "isCorrect": true },
+        { "id": "d", "text": "docker logs kubelet", "isCorrect": false }
+      ],
+      "sortOrder": 19
+    },
+    {
+      "questionText": "A pod scheduled on a specific node is failing with 'Evicted' status and the message 'The node was low on resource: ephemeral-storage'. What should you do to prevent this in the future?",
+      "questionType": "SINGLE_CHOICE",
+      "explanation": "Setting resource limits for ephemeral-storage in the pod spec tells Kubernetes how much local storage the pod is allowed to use. This helps the scheduler make better placement decisions and prevents pods from consuming too much ephemeral storage, which triggers eviction. Configuring requests and limits for ephemeral-storage is the proper way to manage local storage consumption.",
+      "domain": "Troubleshooting",
+      "options": [
+        { "id": "a", "text": "Increase the node's memory", "isCorrect": false },
+        { "id": "b", "text": "Set ephemeral-storage resource requests and limits in the pod spec", "isCorrect": true },
+        { "id": "c", "text": "Disable the eviction manager on the node", "isCorrect": false },
+        { "id": "d", "text": "Move the pod to a namespace with no resource quotas", "isCorrect": false }
+      ],
+      "sortOrder": 20
+    }
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "dayNumber": 1,
+  "title": "Introduction to Linux & the Command Line",
+  "summary": "Get started with Linux by understanding what it is, why it matters for DevOps, and how to navigate the command line. Learn essential commands like pwd, ls, cd, echo, man, and how the shell works.",
+  "resources": [
+    {
+      "title": "Linux Journey - Getting Started",
+      "url": "https://linuxjourney.com/lesson/the-shell",
+      "type": "COURSE",
+      "source": "Linux Journey",
+      "duration": "30 min",
+      "isRequired": true,
+      "sortOrder": 1
+    },
+    {
+      "title": "The Linux Command Line - Chapter 1-3: What Is the Shell",
+      "url": "https://linuxcommand.org/tlcl.php",
+      "type": "ARTICLE",
+      "source": "linuxcommand.org",
+      "duration": "1h",
+      "isRequired": true,
+      "sortOrder": 2
+    },
+    {
+      "title": "The Art of Command Line",
+      "url": "https://github.com/jlevy/the-art-of-command-line",
+      "type": "REPO",
+      "source": "GitHub",
+      "duration": "45 min",
+      "isRequired": false,
+      "sortOrder": 3
+    },
+    {
+      "title": "Introduction to Linux - Full Course for Beginners",
+      "url": "https://www.youtube.com/watch?v=sWbUDq4S6Y8",
+      "type": "VIDEO",
+      "source": "YouTube (freeCodeCamp)",
+      "duration": "6h (watch first 45 min)",
+      "isRequired": false,
+      "sortOrder": 4
+    },
+    {
+      "title": "Linux Survival - Interactive Tutorial",
+      "url": "https://linuxsurvival.com/",
+      "type": "COURSE",
+      "source": "Linux Survival",
+      "duration": "1h",
+      "isRequired": false,
+      "sortOrder": 5
+    }
+  ],
+  "quiz": {
+    "title": "Day 1 Quiz: Linux & the Command Line",
+    "passingScore": 70,
+    "questions": [
+      {
+        "questionText": "What command displays the current working directory?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "The 'pwd' command stands for Print Working Directory and shows the absolute path of your current location in the file system.",
+        "options": [
+          {"id": "a", "text": "pwd", "isCorrect": true},
+          {"id": "b", "text": "cd", "isCorrect": false},
+          {"id": "c", "text": "ls", "isCorrect": false},
+          {"id": "d", "text": "dir", "isCorrect": false}
+        ],
+        "sortOrder": 1
+      },
+      {
+        "questionText": "Which command is used to read the manual page for a command?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "The 'man' command opens the manual page for any command. For example, 'man ls' shows the manual for the ls command.",
+        "options": [
+          {"id": "a", "text": "help", "isCorrect": false},
+          {"id": "b", "text": "info", "isCorrect": false},
+          {"id": "c", "text": "man", "isCorrect": true},
+          {"id": "d", "text": "doc", "isCorrect": false}
+        ],
+        "sortOrder": 2
+      },
+      {
+        "questionText": "What does the 'ls -la' command do?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "The '-l' flag shows detailed (long) listing format, and '-a' shows all files including hidden files (those starting with a dot).",
+        "options": [
+          {"id": "a", "text": "Lists only directories", "isCorrect": false},
+          {"id": "b", "text": "Lists all files including hidden ones in long format", "isCorrect": true},
+          {"id": "c", "text": "Lists files sorted by size", "isCorrect": false},
+          {"id": "d", "text": "Lists files in the /la directory", "isCorrect": false}
+        ],
+        "sortOrder": 3
+      },
+      {
+        "questionText": "In Linux, the root of the filesystem is represented by which path?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "In Linux, the forward slash '/' represents the root of the entire filesystem hierarchy. All other directories branch from it.",
+        "options": [
+          {"id": "a", "text": "C:\\", "isCorrect": false},
+          {"id": "b", "text": "~", "isCorrect": false},
+          {"id": "c", "text": "/", "isCorrect": true},
+          {"id": "d", "text": "/root", "isCorrect": false}
+        ],
+        "sortOrder": 4
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "title": "Explore the Linux File System",
+      "description": "1. Open a terminal (use a VM, WSL, or a cloud sandbox like [killercoda.com](https://killercoda.com))\n2. Run `pwd` to see your current directory\n3. Run `ls -la` to list all files including hidden ones\n4. Navigate to the root directory with `cd /`\n5. List the top-level directories with `ls`\n6. Explore `/etc`, `/var`, `/home`, and `/tmp` using `cd` and `ls`\n7. Return to your home directory with `cd ~`\n8. Use `man ls` to read about all available flags for `ls`",
+      "difficulty": "BEGINNER",
+      "xpReward": 30,
+      "hints": [
+        "Use 'cd -' to go back to the previous directory",
+        "The tilde '~' is a shortcut for your home directory"
+      ],
+      "sortOrder": 1
+    },
+    {
+      "title": "Create Your First Directory Structure",
+      "description": "1. Navigate to your home directory\n2. Create a directory called `devops-lab` using `mkdir devops-lab`\n3. Inside it, create subdirectories: `scripts`, `configs`, `logs`\n4. Use `mkdir -p devops-lab/projects/week1` to create nested directories\n5. Verify your structure with `ls -R devops-lab`\n6. Use `touch devops-lab/logs/app.log` to create an empty file\n7. Run `tree devops-lab` (install tree if needed) to see the full structure",
+      "difficulty": "BEGINNER",
+      "xpReward": 30,
+      "hints": [
+        "The '-p' flag in mkdir creates parent directories as needed",
+        "Install tree with: sudo apt install tree (Ubuntu/Debian) or sudo yum install tree (CentOS/RHEL)"
+      ],
+      "sortOrder": 2
+    }
+  ]
+}

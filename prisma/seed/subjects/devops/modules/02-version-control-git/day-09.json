@@ -1,0 +1,121 @@
+{
+  "dayNumber": 9,
+  "title": "Branching & Merging",
+  "summary": "Master Git branching and merging. Branches let you work on features, fixes, and experiments in isolation. Learn to create, switch, merge, and resolve conflicts — essential skills for any team workflow.",
+  "resources": [
+    {
+      "title": "Pro Git Book - Chapter 3: Git Branching",
+      "url": "https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell",
+      "type": "ARTICLE",
+      "source": "git-scm.com",
+      "duration": "45 min",
+      "isRequired": true,
+      "sortOrder": 1
+    },
+    {
+      "title": "Learn Git Branching - Interactive Visual Tutorial",
+      "url": "https://learngitbranching.js.org/",
+      "type": "COURSE",
+      "source": "Learn Git Branching",
+      "duration": "1h",
+      "isRequired": true,
+      "sortOrder": 2
+    },
+    {
+      "title": "Git Branching and Merging - Explained",
+      "url": "https://www.youtube.com/watch?v=Q1kHG842HoI",
+      "type": "VIDEO",
+      "source": "YouTube",
+      "duration": "20 min",
+      "isRequired": false,
+      "sortOrder": 3
+    },
+    {
+      "title": "Git Merge vs Rebase - Atlassian Guide",
+      "url": "https://www.atlassian.com/git/tutorials/merging-vs-rebasing",
+      "type": "ARTICLE",
+      "source": "Atlassian",
+      "duration": "20 min",
+      "isRequired": false,
+      "sortOrder": 4
+    }
+  ],
+  "quiz": {
+    "title": "Day 9 Quiz: Branching & Merging",
+    "passingScore": 70,
+    "questions": [
+      {
+        "questionText": "What does 'git branch feature-login' do?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "'git branch <name>' creates a new branch pointer at the current commit but does not switch to it. Use 'git checkout <name>' or 'git switch <name>' to switch.",
+        "options": [
+          {"id": "a", "text": "Creates and switches to a new branch", "isCorrect": false},
+          {"id": "b", "text": "Creates a new branch without switching to it", "isCorrect": true},
+          {"id": "c", "text": "Deletes the branch named feature-login", "isCorrect": false},
+          {"id": "d", "text": "Renames the current branch", "isCorrect": false}
+        ],
+        "sortOrder": 1
+      },
+      {
+        "questionText": "What happens during a merge conflict?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "A merge conflict occurs when Git cannot automatically merge because the same lines were changed differently in both branches. Git marks the conflicting sections and you must manually resolve them.",
+        "options": [
+          {"id": "a", "text": "Git automatically picks the newer change", "isCorrect": false},
+          {"id": "b", "text": "The merge is cancelled and changes are lost", "isCorrect": false},
+          {"id": "c", "text": "Git marks conflicts in the file and you must manually resolve them", "isCorrect": true},
+          {"id": "d", "text": "Git creates a new branch for the conflict", "isCorrect": false}
+        ],
+        "sortOrder": 2
+      },
+      {
+        "questionText": "What is a fast-forward merge?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "A fast-forward merge happens when the target branch has not diverged from the source branch. Git simply moves the branch pointer forward, no merge commit is needed.",
+        "options": [
+          {"id": "a", "text": "A merge that happens very quickly", "isCorrect": false},
+          {"id": "b", "text": "A merge where the branch pointer is moved forward without creating a merge commit", "isCorrect": true},
+          {"id": "c", "text": "A merge that skips conflict resolution", "isCorrect": false},
+          {"id": "d", "text": "A merge that only includes the most recent commit", "isCorrect": false}
+        ],
+        "sortOrder": 3
+      },
+      {
+        "questionText": "How do you delete a branch that has been merged?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "'git branch -d <name>' deletes a branch only if it has been fully merged. Use '-D' (capital) to force-delete an unmerged branch.",
+        "options": [
+          {"id": "a", "text": "git remove branch-name", "isCorrect": false},
+          {"id": "b", "text": "git branch --delete branch-name", "isCorrect": false},
+          {"id": "c", "text": "git branch -d branch-name", "isCorrect": true},
+          {"id": "d", "text": "git delete branch-name", "isCorrect": false}
+        ],
+        "sortOrder": 4
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "title": "Branch, Merge, and Resolve Conflicts",
+      "description": "1. Start in your project from Day 8\n2. Create and switch to a feature branch: `git switch -c feature/greeting`\n3. Modify `app.sh` to add a greeting function\n4. Commit the changes\n5. Switch back to main: `git switch main`\n6. Modify the same file differently on main and commit\n7. Merge the feature branch: `git merge feature/greeting`\n8. Resolve the merge conflict:\n   - Open the file and look for `<<<<<<<`, `=======`, `>>>>>>>` markers\n   - Edit the file to keep the changes you want\n   - Stage the resolved file: `git add app.sh`\n   - Complete the merge: `git commit`\n9. View the merge in the log: `git log --oneline --graph --all`\n10. Delete the merged branch: `git branch -d feature/greeting`",
+      "difficulty": "INTERMEDIATE",
+      "xpReward": 50,
+      "hints": [
+        "Use 'git switch -c branch-name' as a shortcut to create and switch in one command",
+        "After resolving conflicts, make sure to remove ALL conflict markers before staging"
+      ],
+      "sortOrder": 1
+    },
+    {
+      "title": "Multi-Branch Workflow Simulation",
+      "description": "1. Create three feature branches from main:\n   - `git switch -c feature/auth`\n   - `git switch main && git switch -c feature/logging`\n   - `git switch main && git switch -c feature/config`\n2. On each branch, create and commit a different file\n3. Merge all three branches into main, one at a time\n4. Observe the log graph: `git log --oneline --graph --all`\n5. Experiment with `git merge --no-ff` to see how it creates merge commits even for fast-forward merges\n6. List all branches: `git branch -a`\n7. Clean up by deleting the merged branches",
+      "difficulty": "INTERMEDIATE",
+      "xpReward": 50,
+      "hints": [
+        "The --no-ff flag forces a merge commit, which preserves the history of the feature branch",
+        "Use 'git branch -v' to see the last commit on each branch"
+      ],
+      "sortOrder": 2
+    }
+  ]
+}

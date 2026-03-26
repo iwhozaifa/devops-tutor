@@ -1,0 +1,118 @@
+{
+  "dayNumber": 6,
+  "title": "Package Management & Software Installation",
+  "summary": "Learn how software is managed on Linux systems. Understand package managers (apt, yum/dnf), repositories, dependencies, and how to compile from source. This knowledge is essential for provisioning and maintaining servers.",
+  "resources": [
+    {
+      "title": "Linux Journey - Packages",
+      "url": "https://linuxjourney.com/lesson/software-distribution",
+      "type": "COURSE",
+      "source": "Linux Journey",
+      "duration": "25 min",
+      "isRequired": true,
+      "sortOrder": 1
+    },
+    {
+      "title": "Ubuntu Package Management Guide",
+      "url": "https://help.ubuntu.com/community/AptGet/Howto",
+      "type": "DOCS",
+      "source": "Ubuntu Community",
+      "duration": "30 min",
+      "isRequired": true,
+      "sortOrder": 2
+    },
+    {
+      "title": "Linux Package Management - apt, yum, dnf Explained",
+      "url": "https://www.youtube.com/watch?v=x8Ddfgh3ikE",
+      "type": "VIDEO",
+      "source": "YouTube (NetworkChuck)",
+      "duration": "15 min",
+      "isRequired": false,
+      "sortOrder": 3
+    },
+    {
+      "title": "RPM and YUM/DNF Documentation",
+      "url": "https://docs.fedoraproject.org/en-US/quick-docs/dnf/",
+      "type": "DOCS",
+      "source": "Fedora Project",
+      "duration": "20 min",
+      "isRequired": false,
+      "sortOrder": 4
+    },
+    {
+      "title": "Homebrew (for macOS/Linux)",
+      "url": "https://brew.sh/",
+      "type": "DOCS",
+      "source": "Homebrew",
+      "duration": "Reference",
+      "isRequired": false,
+      "sortOrder": 5
+    }
+  ],
+  "quiz": {
+    "title": "Day 6 Quiz: Package Management",
+    "passingScore": 70,
+    "questions": [
+      {
+        "questionText": "Which command updates the package list on Ubuntu/Debian?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "'apt update' refreshes the local package index from the configured repositories. This does not upgrade any packages — it only downloads the latest list of available packages.",
+        "options": [
+          {"id": "a", "text": "apt install", "isCorrect": false},
+          {"id": "b", "text": "apt upgrade", "isCorrect": false},
+          {"id": "c", "text": "apt update", "isCorrect": true},
+          {"id": "d", "text": "apt refresh", "isCorrect": false}
+        ],
+        "sortOrder": 1
+      },
+      {
+        "questionText": "What is the equivalent of 'apt' on CentOS/RHEL/Fedora?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "CentOS/RHEL uses 'yum' (older) or 'dnf' (newer, default on Fedora and RHEL 8+). Both manage RPM packages, while apt manages DEB packages.",
+        "options": [
+          {"id": "a", "text": "rpm", "isCorrect": false},
+          {"id": "b", "text": "yum/dnf", "isCorrect": true},
+          {"id": "c", "text": "pacman", "isCorrect": false},
+          {"id": "d", "text": "brew", "isCorrect": false}
+        ],
+        "sortOrder": 2
+      },
+      {
+        "questionText": "What is a package repository?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "A repository is a server (or collection of servers) that hosts software packages. Package managers download packages from these repositories. You can add third-party repositories for additional software.",
+        "options": [
+          {"id": "a", "text": "A Git repository for source code", "isCorrect": false},
+          {"id": "b", "text": "A server that hosts installable software packages", "isCorrect": true},
+          {"id": "c", "text": "A local directory with configuration files", "isCorrect": false},
+          {"id": "d", "text": "A backup of installed software", "isCorrect": false}
+        ],
+        "sortOrder": 3
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "title": "Package Manager Essentials",
+      "description": "1. Update the package list: `sudo apt update` (Debian/Ubuntu) or `sudo dnf check-update` (Fedora/RHEL)\n2. Search for a package: `apt search htop` or `dnf search htop`\n3. Show package info: `apt show htop` or `dnf info htop`\n4. Install a package: `sudo apt install htop` or `sudo dnf install htop`\n5. List installed packages: `dpkg -l | head -20` or `rpm -qa | head -20`\n6. Check which package a file belongs to: `dpkg -S /usr/bin/git` or `rpm -qf /usr/bin/git`\n7. Remove a package: `sudo apt remove htop` or `sudo dnf remove htop`\n8. Clean up cached packages: `sudo apt autoremove && sudo apt clean`",
+      "difficulty": "BEGINNER",
+      "xpReward": 35,
+      "hints": [
+        "Always run 'apt update' before 'apt install' to ensure you get the latest version",
+        "Use 'apt list --installed' to see all installed packages on Debian/Ubuntu"
+      ],
+      "sortOrder": 1
+    },
+    {
+      "title": "Install Software from Source",
+      "description": "1. Install build essentials: `sudo apt install build-essential` or `sudo dnf groupinstall 'Development Tools'`\n2. Clone a small project from GitHub: `git clone https://github.com/jqlang/jq.git` (or download a release tarball)\n3. Alternatively, download a release: `wget https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-1.7.1.tar.gz`\n4. Extract: `tar -xzf jq-1.7.1.tar.gz && cd jq-1.7.1`\n5. Read the README/INSTALL file\n6. Build: `autoreconf -i && ./configure && make`\n7. Install: `sudo make install`\n8. Verify: `jq --version`\n9. Reflect: Why might you install from source vs. using a package manager?",
+      "difficulty": "INTERMEDIATE",
+      "xpReward": 50,
+      "hints": [
+        "The classic build pattern is: ./configure && make && sudo make install",
+        "If autoreconf is missing, install it with: sudo apt install autoconf automake libtool"
+      ],
+      "sortOrder": 2
+    }
+  ]
+}

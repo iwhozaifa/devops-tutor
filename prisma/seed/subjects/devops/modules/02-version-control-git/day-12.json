@@ -1,0 +1,130 @@
+{
+  "dayNumber": 12,
+  "title": "Advanced Git (Rebase, Cherry-pick, Stash)",
+  "summary": "Level up your Git skills with advanced techniques. Learn interactive rebase for clean history, cherry-pick for selective commits, stash for saving work in progress, and how to recover from mistakes with reflog.",
+  "resources": [
+    {
+      "title": "Pro Git Book - Chapter 3.6: Rebasing",
+      "url": "https://git-scm.com/book/en/v2/Git-Branching-Rebasing",
+      "type": "ARTICLE",
+      "source": "git-scm.com",
+      "duration": "30 min",
+      "isRequired": true,
+      "sortOrder": 1
+    },
+    {
+      "title": "Pro Git Book - Chapter 7: Git Tools",
+      "url": "https://git-scm.com/book/en/v2/Git-Tools-Stashing-and-Cleaning",
+      "type": "ARTICLE",
+      "source": "git-scm.com",
+      "duration": "45 min",
+      "isRequired": true,
+      "sortOrder": 2
+    },
+    {
+      "title": "Git Rebase vs Merge - Which Should You Use?",
+      "url": "https://www.youtube.com/watch?v=CRlGDDprdOQ",
+      "type": "VIDEO",
+      "source": "YouTube (Fireship)",
+      "duration": "5 min",
+      "isRequired": false,
+      "sortOrder": 3
+    },
+    {
+      "title": "Oh Shit, Git!?! - Fixing Mistakes",
+      "url": "https://ohshitgit.com/",
+      "type": "ARTICLE",
+      "source": "ohshitgit.com",
+      "duration": "15 min",
+      "isRequired": false,
+      "sortOrder": 4
+    },
+    {
+      "title": "Flight Rules for Git",
+      "url": "https://github.com/k88hudson/git-flight-rules",
+      "type": "REPO",
+      "source": "GitHub",
+      "duration": "Reference",
+      "isRequired": false,
+      "sortOrder": 5
+    }
+  ],
+  "quiz": {
+    "title": "Day 12 Quiz: Advanced Git",
+    "passingScore": 70,
+    "questions": [
+      {
+        "questionText": "What does 'git rebase main' do when on a feature branch?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "Rebase replays the commits from your feature branch on top of the latest main branch. This creates a linear history without merge commits, as if you had started your work from the latest main.",
+        "options": [
+          {"id": "a", "text": "Merges main into the feature branch", "isCorrect": false},
+          {"id": "b", "text": "Replays feature branch commits on top of main", "isCorrect": true},
+          {"id": "c", "text": "Deletes the feature branch", "isCorrect": false},
+          {"id": "d", "text": "Creates a backup of the feature branch", "isCorrect": false}
+        ],
+        "sortOrder": 1
+      },
+      {
+        "questionText": "What does 'git stash' do?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "'git stash' temporarily saves your uncommitted changes (both staged and unstaged) and reverts your working directory to the last commit. Use 'git stash pop' to restore them.",
+        "options": [
+          {"id": "a", "text": "Deletes uncommitted changes permanently", "isCorrect": false},
+          {"id": "b", "text": "Saves uncommitted changes temporarily so you can switch branches", "isCorrect": true},
+          {"id": "c", "text": "Commits all changes with a default message", "isCorrect": false},
+          {"id": "d", "text": "Creates a new branch from current changes", "isCorrect": false}
+        ],
+        "sortOrder": 2
+      },
+      {
+        "questionText": "What does 'git cherry-pick <commit-hash>' do?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "Cherry-pick applies the changes from a specific commit onto your current branch. It creates a new commit with the same changes but a different hash. Useful for backporting fixes.",
+        "options": [
+          {"id": "a", "text": "Moves a commit from one branch to another", "isCorrect": false},
+          {"id": "b", "text": "Deletes a specific commit", "isCorrect": false},
+          {"id": "c", "text": "Applies the changes from a specific commit to the current branch", "isCorrect": true},
+          {"id": "d", "text": "Reverts a specific commit", "isCorrect": false}
+        ],
+        "sortOrder": 3
+      },
+      {
+        "questionText": "When should you NOT rebase?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "Never rebase commits that have been pushed to a public/shared branch. Rebasing rewrites commit history, which causes problems for others who have based work on those commits.",
+        "options": [
+          {"id": "a", "text": "On local feature branches before pushing", "isCorrect": false},
+          {"id": "b", "text": "On commits that have been pushed to a shared branch", "isCorrect": true},
+          {"id": "c", "text": "Before merging a feature branch", "isCorrect": false},
+          {"id": "d", "text": "When cleaning up local commit history", "isCorrect": false}
+        ],
+        "sortOrder": 4
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "title": "Practice Rebase and Stash",
+      "description": "1. Create a new repo or use an existing one\n2. Make 3 commits on main\n3. Create a feature branch and make 2 commits\n4. Go back to main and make 1 more commit (so the branches diverge)\n5. Switch to the feature branch and rebase: `git rebase main`\n6. View the log: `git log --oneline --graph --all`\n7. Now practice stash:\n   - Make changes to a file but do not commit\n   - Run `git stash`\n   - Verify working directory is clean: `git status`\n   - Switch branches, do some work, switch back\n   - Restore changes: `git stash pop`\n8. List stashes: `git stash list`\n9. Try `git stash save 'work in progress on feature X'` for labeled stashes",
+      "difficulty": "INTERMEDIATE",
+      "xpReward": 50,
+      "hints": [
+        "Use 'git stash apply' instead of 'pop' to keep the stash entry",
+        "If rebase has conflicts, resolve them, then: git add <file> && git rebase --continue"
+      ],
+      "sortOrder": 1
+    },
+    {
+      "title": "Cherry-pick and Recovery with Reflog",
+      "description": "1. Create two branches with different commits\n2. Use `git log --oneline` to find a specific commit hash on one branch\n3. Switch to the other branch and cherry-pick it: `git cherry-pick <hash>`\n4. Verify the commit was applied: `git log --oneline`\n5. Now practice recovery:\n   - Make a commit, then reset it: `git reset --hard HEAD~1`\n   - The commit seems gone! View the reflog: `git reflog`\n   - Find the lost commit hash in the reflog\n   - Recover it: `git cherry-pick <hash>` or `git reset --hard <hash>`\n6. Explore reflog: `git reflog show --all`\n7. Understand that reflog is your safety net — Git rarely truly loses data",
+      "difficulty": "INTERMEDIATE",
+      "xpReward": 60,
+      "hints": [
+        "Reflog entries expire after 90 days by default, so recovery is time-limited",
+        "git cherry-pick -n <hash> applies changes without committing, letting you modify before committing"
+      ],
+      "sortOrder": 2
+    }
+  ]
+}

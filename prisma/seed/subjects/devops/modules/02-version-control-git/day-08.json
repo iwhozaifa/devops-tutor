@@ -1,0 +1,130 @@
+{
+  "dayNumber": 8,
+  "title": "Git Fundamentals - Init, Add, Commit",
+  "summary": "Learn the foundations of Git version control. Understand repositories, the staging area, commits, and the basic workflow. Git is the universal version control system used in every DevOps pipeline.",
+  "resources": [
+    {
+      "title": "Pro Git Book - Chapter 1: Getting Started",
+      "url": "https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control",
+      "type": "ARTICLE",
+      "source": "git-scm.com",
+      "duration": "30 min",
+      "isRequired": true,
+      "sortOrder": 1
+    },
+    {
+      "title": "Pro Git Book - Chapter 2: Git Basics",
+      "url": "https://git-scm.com/book/en/v2/Git-Basics-Getting-a-Git-Repository",
+      "type": "ARTICLE",
+      "source": "git-scm.com",
+      "duration": "45 min",
+      "isRequired": true,
+      "sortOrder": 2
+    },
+    {
+      "title": "Git & GitHub Crash Course For Beginners",
+      "url": "https://www.youtube.com/watch?v=SWYqp7iY_Tc",
+      "type": "VIDEO",
+      "source": "YouTube (Traversy Media)",
+      "duration": "30 min",
+      "isRequired": false,
+      "sortOrder": 3
+    },
+    {
+      "title": "Learn Git Branching - Interactive Tutorial",
+      "url": "https://learngitbranching.js.org/",
+      "type": "COURSE",
+      "source": "Learn Git Branching",
+      "duration": "1h",
+      "isRequired": false,
+      "sortOrder": 4
+    },
+    {
+      "title": "Official Git Documentation",
+      "url": "https://git-scm.com/docs",
+      "type": "DOCS",
+      "source": "git-scm.com",
+      "duration": "Reference",
+      "isRequired": false,
+      "sortOrder": 5
+    }
+  ],
+  "quiz": {
+    "title": "Day 8 Quiz: Git Fundamentals",
+    "passingScore": 70,
+    "questions": [
+      {
+        "questionText": "What does 'git init' do?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "'git init' creates a new Git repository in the current directory by creating a .git subdirectory that contains all the necessary metadata and object database for the repository.",
+        "options": [
+          {"id": "a", "text": "Clones a remote repository", "isCorrect": false},
+          {"id": "b", "text": "Initializes a new Git repository in the current directory", "isCorrect": true},
+          {"id": "c", "text": "Installs Git on the system", "isCorrect": false},
+          {"id": "d", "text": "Resets the repository to its initial state", "isCorrect": false}
+        ],
+        "sortOrder": 1
+      },
+      {
+        "questionText": "What is the Git staging area (index)?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "The staging area (also called the index) is an intermediate area where you prepare changes before committing. 'git add' moves changes to the staging area, and 'git commit' records the staged changes.",
+        "options": [
+          {"id": "a", "text": "A remote backup of your code", "isCorrect": false},
+          {"id": "b", "text": "An intermediate area where changes are prepared before committing", "isCorrect": true},
+          {"id": "c", "text": "A branch where you test code", "isCorrect": false},
+          {"id": "d", "text": "The same as the working directory", "isCorrect": false}
+        ],
+        "sortOrder": 2
+      },
+      {
+        "questionText": "Which command shows the current state of your working directory and staging area?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "'git status' shows which files are modified, staged, or untracked. It is one of the most frequently used Git commands.",
+        "options": [
+          {"id": "a", "text": "git log", "isCorrect": false},
+          {"id": "b", "text": "git diff", "isCorrect": false},
+          {"id": "c", "text": "git status", "isCorrect": true},
+          {"id": "d", "text": "git show", "isCorrect": false}
+        ],
+        "sortOrder": 3
+      },
+      {
+        "questionText": "What is a good practice for writing commit messages?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "Good commit messages use the imperative mood (like a command), are concise but descriptive, and explain the 'why' behind changes. The convention is: short summary (50 chars), blank line, then detailed body.",
+        "options": [
+          {"id": "a", "text": "Write as much detail as possible in one long line", "isCorrect": false},
+          {"id": "b", "text": "Use past tense like 'Fixed the bug'", "isCorrect": false},
+          {"id": "c", "text": "Start with a short imperative summary, like 'Add user authentication'", "isCorrect": true},
+          {"id": "d", "text": "Just use the default message", "isCorrect": false}
+        ],
+        "sortOrder": 4
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "title": "Create Your First Git Repository",
+      "description": "1. Configure Git (if not already done):\n   ```\n   git config --global user.name 'Your Name'\n   git config --global user.email 'your@email.com'\n   ```\n2. Create a new project directory: `mkdir my-devops-project && cd my-devops-project`\n3. Initialize Git: `git init`\n4. Check status: `git status`\n5. Create a README: `echo '# My DevOps Project' > README.md`\n6. Stage it: `git add README.md`\n7. Check status again and note the difference\n8. Commit: `git commit -m 'Initial commit: add README'`\n9. View the log: `git log`\n10. Add more files, make multiple commits, and observe the history with `git log --oneline`",
+      "difficulty": "BEGINNER",
+      "xpReward": 35,
+      "hints": [
+        "Use 'git log --oneline --graph' for a compact visual history",
+        "Check what has changed before committing with 'git diff' (unstaged) or 'git diff --staged' (staged)"
+      ],
+      "sortOrder": 1
+    },
+    {
+      "title": "Practice the Git Workflow",
+      "description": "1. In your project, create a file `app.sh` with a simple script\n2. Stage and commit it\n3. Modify the file and use `git diff` to see changes\n4. Stage the changes with `git add app.sh`\n5. Use `git diff --staged` to see staged changes\n6. Commit with a descriptive message\n7. Create a `.gitignore` file with common patterns:\n   ```\n   *.log\n   .env\n   node_modules/\n   __pycache__/\n   .DS_Store\n   ```\n8. Create a `test.log` file and verify it is ignored with `git status`\n9. View the full history: `git log --oneline --all --graph`\n10. Use `git show <commit-hash>` to inspect a specific commit",
+      "difficulty": "BEGINNER",
+      "xpReward": 40,
+      "hints": [
+        "Use 'git add -p' to interactively stage portions of a file",
+        "The .gitignore file itself should be committed to the repository"
+      ],
+      "sortOrder": 2
+    }
+  ]
+}

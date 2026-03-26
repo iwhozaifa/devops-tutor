@@ -1,0 +1,142 @@
+{
+  "dayNumber": 7,
+  "title": "Networking Basics (ip, netstat, curl, ssh)",
+  "summary": "Understand fundamental networking concepts on Linux. Learn to inspect network interfaces, test connectivity, make HTTP requests, and connect securely to remote servers with SSH. These skills are critical for managing cloud infrastructure.",
+  "resources": [
+    {
+      "title": "Linux Journey - Networking Nomad",
+      "url": "https://linuxjourney.com/lesson/network-basics",
+      "type": "COURSE",
+      "source": "Linux Journey",
+      "duration": "30 min",
+      "isRequired": true,
+      "sortOrder": 1
+    },
+    {
+      "title": "SSH Crash Course - Authentication and More",
+      "url": "https://www.youtube.com/watch?v=hQWRp-FdTpc",
+      "type": "VIDEO",
+      "source": "YouTube (Traversy Media)",
+      "duration": "30 min",
+      "isRequired": true,
+      "sortOrder": 2
+    },
+    {
+      "title": "Everything Curl - The Book",
+      "url": "https://everything.curl.dev/",
+      "type": "DOCS",
+      "source": "curl.dev",
+      "duration": "Reference (Chapters 1-5)",
+      "isRequired": false,
+      "sortOrder": 3
+    },
+    {
+      "title": "Linux Networking Commands with Examples",
+      "url": "https://www.youtube.com/watch?v=Mun-sECOKFE",
+      "type": "VIDEO",
+      "source": "YouTube",
+      "duration": "20 min",
+      "isRequired": false,
+      "sortOrder": 4
+    },
+    {
+      "title": "OpenSSH Manual Pages",
+      "url": "https://www.openssh.com/manual.html",
+      "type": "DOCS",
+      "source": "OpenSSH",
+      "duration": "Reference",
+      "isRequired": false,
+      "sortOrder": 5
+    }
+  ],
+  "quiz": {
+    "title": "Day 7 Quiz: Networking Basics",
+    "passingScore": 70,
+    "questions": [
+      {
+        "questionText": "Which command is used to display network interface information on modern Linux?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "The 'ip' command (specifically 'ip addr' or 'ip a') is the modern replacement for ifconfig. It shows all network interfaces and their IP addresses.",
+        "options": [
+          {"id": "a", "text": "ifconfig (deprecated)", "isCorrect": false},
+          {"id": "b", "text": "ip addr", "isCorrect": true},
+          {"id": "c", "text": "netstat -i", "isCorrect": false},
+          {"id": "d", "text": "route", "isCorrect": false}
+        ],
+        "sortOrder": 1
+      },
+      {
+        "questionText": "What does `curl -I https://example.com` do?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "The '-I' flag (or --head) tells curl to fetch only the HTTP headers, not the response body. This is useful for checking status codes and server information.",
+        "options": [
+          {"id": "a", "text": "Downloads the page content", "isCorrect": false},
+          {"id": "b", "text": "Sends a POST request", "isCorrect": false},
+          {"id": "c", "text": "Fetches only the HTTP headers", "isCorrect": true},
+          {"id": "d", "text": "Follows all redirects", "isCorrect": false}
+        ],
+        "sortOrder": 2
+      },
+      {
+        "questionText": "What is the default port for SSH?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "SSH runs on port 22 by default. This can be changed in the SSH server configuration (/etc/ssh/sshd_config) for security purposes.",
+        "options": [
+          {"id": "a", "text": "21", "isCorrect": false},
+          {"id": "b", "text": "22", "isCorrect": true},
+          {"id": "c", "text": "80", "isCorrect": false},
+          {"id": "d", "text": "443", "isCorrect": false}
+        ],
+        "sortOrder": 3
+      },
+      {
+        "questionText": "Which command tests if a remote host is reachable?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "The 'ping' command sends ICMP echo request packets to a host and reports the response time. It is the simplest way to test network connectivity.",
+        "options": [
+          {"id": "a", "text": "ping", "isCorrect": true},
+          {"id": "b", "text": "telnet", "isCorrect": false},
+          {"id": "c", "text": "wget", "isCorrect": false},
+          {"id": "d", "text": "nslookup", "isCorrect": false}
+        ],
+        "sortOrder": 4
+      },
+      {
+        "questionText": "What does `ss -tlnp` display?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "The 'ss' command (socket statistics) with flags: -t (TCP), -l (listening), -n (numeric ports), -p (process info) shows all TCP ports being listened on and which process is using them.",
+        "options": [
+          {"id": "a", "text": "All established connections", "isCorrect": false},
+          {"id": "b", "text": "Listening TCP ports with process information", "isCorrect": true},
+          {"id": "c", "text": "Network transfer speeds", "isCorrect": false},
+          {"id": "d", "text": "DNS resolution results", "isCorrect": false}
+        ],
+        "sortOrder": 5
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "title": "Network Diagnostics",
+      "description": "1. View your IP address: `ip addr show` (or `ip a`)\n2. View the routing table: `ip route`\n3. Test connectivity: `ping -c 4 google.com`\n4. Trace the route to a host: `traceroute google.com` (install if needed)\n5. DNS lookup: `nslookup google.com` and `dig google.com`\n6. View listening ports: `ss -tlnp`\n7. Make an HTTP request: `curl -v https://httpbin.org/get`\n8. Fetch only headers: `curl -I https://httpbin.org/get`\n9. Download a file: `curl -O https://raw.githubusercontent.com/jlevy/the-art-of-command-line/master/README.md`\n10. Test a specific port: `curl -v telnet://google.com:80`",
+      "difficulty": "BEGINNER",
+      "xpReward": 40,
+      "hints": [
+        "If traceroute is not installed, try: sudo apt install traceroute",
+        "curl -v (verbose) shows the full HTTP request and response headers"
+      ],
+      "sortOrder": 1
+    },
+    {
+      "title": "SSH Key Setup and Remote Connection",
+      "description": "1. Generate an SSH key pair: `ssh-keygen -t ed25519 -C 'your_email@example.com'`\n2. View the public key: `cat ~/.ssh/id_ed25519.pub`\n3. Start the SSH agent: `eval $(ssh-agent -s)`\n4. Add your key: `ssh-add ~/.ssh/id_ed25519`\n5. Set up an SSH config file:\n   ```\n   touch ~/.ssh/config\n   chmod 600 ~/.ssh/config\n   ```\n6. Add a sample host entry:\n   ```\n   Host myserver\n     HostName 192.168.1.100\n     User devops\n     IdentityFile ~/.ssh/id_ed25519\n   ```\n7. If you have access to a remote server or VM, copy your key: `ssh-copy-id user@hostname`\n8. Connect: `ssh user@hostname` (or `ssh myserver` if using the config)",
+      "difficulty": "INTERMEDIATE",
+      "xpReward": 50,
+      "hints": [
+        "ed25519 keys are newer and more secure than RSA keys",
+        "If you do not have a remote server, you can practice with a free sandbox at killercoda.com or use a local VM"
+      ],
+      "sortOrder": 2
+    }
+  ]
+}

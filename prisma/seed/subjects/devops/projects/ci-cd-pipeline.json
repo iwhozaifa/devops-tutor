@@ -1,0 +1,105 @@
+{
+  "title": "Build a CI/CD Pipeline with GitHub Actions",
+  "description": "Create a complete CI/CD pipeline that automatically tests, builds, and deploys a simple web application using GitHub Actions. You'll learn to write workflows, run tests, build Docker images, and deploy to a staging environment.",
+  "difficulty": "BEGINNER",
+  "xpReward": 500,
+  "repoUrl": "https://github.com/skills/continuous-integration",
+  "steps": [
+    {
+      "stepNumber": 1,
+      "title": "Set Up the Repository",
+      "description": "Create a new GitHub repository with a simple Node.js application.\n\n1. Create a new repo on GitHub\n2. Initialize with a basic Express.js app (index.js with a hello world endpoint)\n3. Add a package.json with a start and test script\n4. Write a simple test using the test framework of your choice\n5. Push to GitHub",
+      "checkpoints": [
+        "Repository created on GitHub",
+        "Express.js app with at least one endpoint",
+        "package.json has 'start' and 'test' scripts",
+        "At least one test file exists",
+        "Code pushed to main branch"
+      ]
+    },
+    {
+      "stepNumber": 2,
+      "title": "Create a Basic CI Workflow",
+      "description": "Add your first GitHub Actions workflow that runs on every push.\n\n1. Create the `.github/workflows/` directory in your repo\n2. Add a `ci.yml` workflow file\n3. Configure it to trigger on push to `main` and on pull requests\n4. Add a job that checks out the code, sets up Node.js, installs dependencies, and runs your tests\n5. Push the workflow and verify it runs in the Actions tab",
+      "checkpoints": [
+        ".github/workflows/ci.yml file exists",
+        "Workflow triggers on push and pull_request events",
+        "Job includes checkout, setup-node, npm install, and npm test steps",
+        "Workflow runs successfully in the Actions tab",
+        "Green checkmark appears on the commit"
+      ]
+    },
+    {
+      "stepNumber": 3,
+      "title": "Add Linting and Code Quality Checks",
+      "description": "Extend your pipeline to enforce code quality before merging.\n\n1. Install ESLint in your project and create a basic config\n2. Add a `lint` script to package.json\n3. Add a linting step to your CI workflow (before tests)\n4. Optionally add a separate job for linting so it runs in parallel with tests\n5. Create a pull request with a linting error to verify the check fails",
+      "checkpoints": [
+        "ESLint installed and configured",
+        "package.json has a 'lint' script",
+        "CI workflow includes a linting step",
+        "PR with lint errors shows a failing check",
+        "Clean PR shows all checks passing"
+      ]
+    },
+    {
+      "stepNumber": 4,
+      "title": "Write a Dockerfile",
+      "description": "Containerize your application so it can be built and deployed consistently.\n\n1. Create a `Dockerfile` in the project root\n2. Use a Node.js base image (e.g., `node:20-alpine`)\n3. Copy package.json and install dependencies first (leverage Docker layer caching)\n4. Copy the rest of the application code\n5. Expose the appropriate port and set the CMD to start the app\n6. Test locally with `docker build -t myapp .` and `docker run -p 3000:3000 myapp`",
+      "checkpoints": [
+        "Dockerfile exists in the project root",
+        "Uses a multi-stage or optimized base image",
+        "Dependencies are installed before copying app code",
+        "Container builds successfully with docker build",
+        "App is accessible when running the container locally"
+      ]
+    },
+    {
+      "stepNumber": 5,
+      "title": "Add Docker Build to the Pipeline",
+      "description": "Extend your CI workflow to automatically build a Docker image on every push.\n\n1. Add a new job (or step) to your workflow for building the Docker image\n2. Use the `docker/build-push-action` GitHub Action\n3. Configure it to build but not push (for now)\n4. Add caching with `actions/cache` or Docker layer caching to speed up builds\n5. Verify the Docker build step passes in the Actions tab",
+      "checkpoints": [
+        "CI workflow has a Docker build job or step",
+        "docker/build-push-action is configured correctly",
+        "Build caching is enabled",
+        "Docker build completes successfully in CI",
+        "Build job depends on tests passing first"
+      ]
+    },
+    {
+      "stepNumber": 6,
+      "title": "Push Docker Image to a Registry",
+      "description": "Configure your pipeline to push built images to GitHub Container Registry (GHCR).\n\n1. Add authentication to GHCR using the built-in `GITHUB_TOKEN`\n2. Log in to GHCR in your workflow using `docker/login-action`\n3. Tag your image with the commit SHA and `latest`\n4. Update the build step to push the image to `ghcr.io/<your-username>/<repo-name>`\n5. Verify the image appears in your GitHub Packages",
+      "checkpoints": [
+        "Workflow logs in to GHCR using docker/login-action",
+        "Image is tagged with commit SHA and latest",
+        "docker/build-push-action has push: true",
+        "Image is visible in GitHub Packages after a successful run",
+        "Only pushes on main branch (not on PRs)"
+      ]
+    },
+    {
+      "stepNumber": 7,
+      "title": "Deploy to a Staging Environment",
+      "description": "Add a deployment step that deploys your Docker image to a staging server or platform.\n\n1. Choose a deployment target (e.g., a VPS with SSH, Railway, Render, or a self-hosted server)\n2. Store deployment credentials as GitHub Secrets (never in code)\n3. Add a deploy job that runs only after the image is pushed\n4. Use SSH, a platform CLI, or an API call to deploy the new image\n5. Add an environment URL to the workflow so GitHub shows a deployment link",
+      "checkpoints": [
+        "Deployment credentials stored as GitHub Secrets",
+        "Deploy job runs only after successful image push",
+        "Deployment uses the correct image tag",
+        "GitHub shows the deployment environment and URL",
+        "Application is accessible at the staging URL after deployment"
+      ]
+    },
+    {
+      "stepNumber": 8,
+      "title": "Add Notifications and Status Badges",
+      "description": "Finish your pipeline with monitoring, notifications, and a status badge.\n\n1. Add a Slack or Discord notification step that fires on deployment success or failure\n2. Use a webhook or a GitHub Action like `slackapi/slack-github-action`\n3. Include the commit message, author, and link to the workflow run in the notification\n4. Add a workflow status badge to your README.md\n5. Test the full pipeline end-to-end: push code, watch tests run, image build, deploy, and notification",
+      "checkpoints": [
+        "Notification fires on deployment success",
+        "Notification fires on deployment failure",
+        "Notification includes commit info and workflow link",
+        "README.md displays the workflow status badge",
+        "Full pipeline completes end-to-end in under 10 minutes"
+      ]
+    }
+  ]
+}

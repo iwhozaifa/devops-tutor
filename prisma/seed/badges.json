@@ -1,0 +1,92 @@
+[
+  {
+    "slug": "first-day",
+    "title": "First Step",
+    "description": "Complete your first day",
+    "icon": "footprints",
+    "category": "COMPLETION",
+    "trigger": { "type": "days_completed", "value": 1 },
+    "xpReward": 50
+  },
+  {
+    "slug": "week-warrior",
+    "title": "Week Warrior",
+    "description": "Complete 7 days",
+    "icon": "calendar-check",
+    "category": "COMPLETION",
+    "trigger": { "type": "days_completed", "value": 7 },
+    "xpReward": 100
+  },
+  {
+    "slug": "two-week-champ",
+    "title": "Two Week Champ",
+    "description": "Complete 14 days",
+    "icon": "medal",
+    "category": "COMPLETION",
+    "trigger": { "type": "days_completed", "value": 14 },
+    "xpReward": 200
+  },
+  {
+    "slug": "streak-3",
+    "title": "Getting Started",
+    "description": "3-day streak",
+    "icon": "flame",
+    "category": "STREAK",
+    "trigger": { "type": "streak_days", "value": 3 },
+    "xpReward": 50
+  },
+  {
+    "slug": "streak-7",
+    "title": "On Fire",
+    "description": "7-day streak",
+    "icon": "flame",
+    "category": "STREAK",
+    "trigger": { "type": "streak_days", "value": 7 },
+    "xpReward": 200
+  },
+  {
+    "slug": "streak-30",
+    "title": "Unstoppable",
+    "description": "30-day streak",
+    "icon": "zap",
+    "category": "STREAK",
+    "trigger": { "type": "streak_days", "value": 30 },
+    "xpReward": 500
+  },
+  {
+    "slug": "quiz-ace",
+    "title": "Quiz Ace",
+    "description": "Score 100% on any quiz",
+    "icon": "trophy",
+    "category": "QUIZ",
+    "trigger": { "type": "quiz_perfect_score", "value": 1 },
+    "xpReward": 100
+  },
+  {
+    "slug": "quiz-master",
+    "title": "Quiz Master",
+    "description": "Pass 10 quizzes",
+    "icon": "brain",
+    "category": "QUIZ",
+    "trigger": { "type": "quizzes_passed", "value": 10 },
+    "xpReward": 200
+  },
+  {
+    "slug": "cert-ready",
+    "title": "Certification Ready",
+    "description": "Pass a practice exam",
+    "icon": "award",
+    "category": "EXAM",
+    "trigger": { "type": "exams_passed", "value": 1 },
+    "xpReward": 300
+  },
+  {
+    "slug": "builder",
+    "title": "Builder",
+    "description": "Complete your first project",
+    "icon": "hammer",
+    "category": "PROJECT",
+    "trigger": { "type": "projects_completed", "value": 1 },
+    "xpReward": 200
+  }
+]

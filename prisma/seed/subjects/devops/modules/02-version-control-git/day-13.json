@@ -1,0 +1,130 @@
+{
+  "dayNumber": 13,
+  "title": "GitHub Actions - CI Basics",
+  "summary": "Introduction to GitHub Actions for Continuous Integration. Learn to create workflows that automatically build, test, and validate your code on every push. Understand YAML workflow syntax, triggers, jobs, and steps.",
+  "resources": [
+    {
+      "title": "GitHub Actions Documentation - Quickstart",
+      "url": "https://docs.github.com/en/actions/quickstart",
+      "type": "DOCS",
+      "source": "GitHub",
+      "duration": "30 min",
+      "isRequired": true,
+      "sortOrder": 1
+    },
+    {
+      "title": "Understanding GitHub Actions",
+      "url": "https://docs.github.com/en/actions/learn-github-actions/understanding-github-actions",
+      "type": "DOCS",
+      "source": "GitHub",
+      "duration": "20 min",
+      "isRequired": true,
+      "sortOrder": 2
+    },
+    {
+      "title": "GitHub Actions Tutorial - Full Course",
+      "url": "https://www.youtube.com/watch?v=R8_veQiYBjI",
+      "type": "VIDEO",
+      "source": "YouTube (TechWorld with Nana)",
+      "duration": "1h",
+      "isRequired": false,
+      "sortOrder": 3
+    },
+    {
+      "title": "GitHub Actions Starter Workflows",
+      "url": "https://github.com/actions/starter-workflows",
+      "type": "REPO",
+      "source": "GitHub",
+      "duration": "Reference",
+      "isRequired": false,
+      "sortOrder": 4
+    },
+    {
+      "title": "Workflow Syntax Reference",
+      "url": "https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions",
+      "type": "DOCS",
+      "source": "GitHub",
+      "duration": "Reference",
+      "isRequired": false,
+      "sortOrder": 5
+    }
+  ],
+  "quiz": {
+    "title": "Day 13 Quiz: GitHub Actions CI Basics",
+    "passingScore": 70,
+    "questions": [
+      {
+        "questionText": "Where must GitHub Actions workflow files be stored?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "GitHub Actions workflow files must be YAML files stored in the '.github/workflows' directory of your repository. GitHub automatically discovers and runs them.",
+        "options": [
+          {"id": "a", "text": ".github/actions/", "isCorrect": false},
+          {"id": "b", "text": ".github/workflows/", "isCorrect": true},
+          {"id": "c", "text": ".ci/workflows/", "isCorrect": false},
+          {"id": "d", "text": "workflows/", "isCorrect": false}
+        ],
+        "sortOrder": 1
+      },
+      {
+        "questionText": "What does 'on: [push, pull_request]' mean in a workflow file?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "The 'on' key defines workflow triggers. '[push, pull_request]' means the workflow runs when code is pushed to the repository OR when a pull request is opened/updated.",
+        "options": [
+          {"id": "a", "text": "The workflow runs only when both push and PR happen simultaneously", "isCorrect": false},
+          {"id": "b", "text": "The workflow is triggered by either a push or a pull request event", "isCorrect": true},
+          {"id": "c", "text": "The workflow pushes code and creates a pull request", "isCorrect": false},
+          {"id": "d", "text": "The workflow runs on a schedule", "isCorrect": false}
+        ],
+        "sortOrder": 2
+      },
+      {
+        "questionText": "What is a 'step' in a GitHub Actions job?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "A step is an individual task within a job. It can either run a shell command (using 'run:') or use a pre-built action (using 'uses:'). Steps run sequentially within a job.",
+        "options": [
+          {"id": "a", "text": "A separate virtual machine", "isCorrect": false},
+          {"id": "b", "text": "A parallel execution unit", "isCorrect": false},
+          {"id": "c", "text": "An individual task that runs a command or uses an action", "isCorrect": true},
+          {"id": "d", "text": "A branch protection rule", "isCorrect": false}
+        ],
+        "sortOrder": 3
+      },
+      {
+        "questionText": "What does 'uses: actions/checkout@v4' do in a workflow?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "The 'actions/checkout' action checks out your repository code onto the runner, making it available for subsequent steps. Without it, the runner has no access to your code.",
+        "options": [
+          {"id": "a", "text": "Creates a new Git branch", "isCorrect": false},
+          {"id": "b", "text": "Checks out the repository code onto the runner", "isCorrect": true},
+          {"id": "c", "text": "Checks if the code compiles", "isCorrect": false},
+          {"id": "d", "text": "Runs code quality checks", "isCorrect": false}
+        ],
+        "sortOrder": 4
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "title": "Create Your First CI Workflow",
+      "description": "1. In your GitHub repository, create the workflow directory:\n   ```\n   mkdir -p .github/workflows\n   ```\n2. Create a file `.github/workflows/ci.yml` with:\n   ```yaml\n   name: CI\n   on:\n     push:\n       branches: [main]\n     pull_request:\n       branches: [main]\n   jobs:\n     build:\n       runs-on: ubuntu-latest\n       steps:\n         - uses: actions/checkout@v4\n         - name: List files\n           run: ls -la\n         - name: Run tests\n           run: |\n             echo 'Running tests...'\n             # Add your test commands here\n             echo 'All tests passed!'\n         - name: Check shell scripts\n           run: |\n             if ls *.sh 1>/dev/null 2>&1; then\n               bash -n *.sh\n               echo 'Shell script syntax check passed'\n             else\n               echo 'No shell scripts found'\n             fi\n   ```\n3. Commit and push to GitHub\n4. Go to the Actions tab to see your workflow run\n5. Click into the run to see the step-by-step output",
+      "difficulty": "BEGINNER",
+      "xpReward": 50,
+      "hints": [
+        "YAML is indentation-sensitive — use spaces, not tabs (2-space indent is standard)",
+        "The pipe '|' in YAML allows multi-line strings for 'run:' commands"
+      ],
+      "sortOrder": 1
+    },
+    {
+      "title": "Add Linting and Multi-Job Workflow",
+      "description": "1. Enhance your CI workflow with multiple jobs:\n   ```yaml\n   name: CI Pipeline\n   on: [push, pull_request]\n   jobs:\n     lint:\n       runs-on: ubuntu-latest\n       steps:\n         - uses: actions/checkout@v4\n         - name: Install ShellCheck\n           run: sudo apt-get install -y shellcheck\n         - name: Lint shell scripts\n           run: find . -name '*.sh' -exec shellcheck {} +\n     test:\n       runs-on: ubuntu-latest\n       needs: lint\n       steps:\n         - uses: actions/checkout@v4\n         - name: Run tests\n           run: echo 'Running tests after lint passed'\n   ```\n2. Note the `needs: lint` — this makes 'test' wait for 'lint' to pass\n3. Add a shell script with a deliberate issue to see the linter catch it\n4. Fix the issue and push again\n5. Observe how jobs run sequentially vs in parallel\n6. Add a status badge to your README:\n   ```\n   ![CI](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/ci.yml/badge.svg)\n   ```",
+      "difficulty": "INTERMEDIATE",
+      "xpReward": 60,
+      "hints": [
+        "Jobs without 'needs' run in parallel by default",
+        "Use 'continue-on-error: true' on a step if you want the workflow to continue even if that step fails"
+      ],
+      "sortOrder": 2
+    }
+  ]
+}

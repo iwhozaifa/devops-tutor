@@ -1,0 +1,142 @@
+{
+  "dayNumber": 3,
+  "title": "Text Processing (grep, sed, awk)",
+  "summary": "Learn the essential text processing tools that make Linux powerful for DevOps. Master grep for searching, sed for stream editing, and awk for pattern-based text processing. These tools are the backbone of log analysis and configuration management.",
+  "resources": [
+    {
+      "title": "Linux Journey - Text-Fu",
+      "url": "https://linuxjourney.com/lesson/stdout-standard-out-redirect",
+      "type": "COURSE",
+      "source": "Linux Journey",
+      "duration": "30 min",
+      "isRequired": true,
+      "sortOrder": 1
+    },
+    {
+      "title": "The Linux Command Line - Chapter 19-20: Regular Expressions & Text Processing",
+      "url": "https://linuxcommand.org/tlcl.php",
+      "type": "ARTICLE",
+      "source": "linuxcommand.org",
+      "duration": "1.5h",
+      "isRequired": true,
+      "sortOrder": 2
+    },
+    {
+      "title": "Grep, Awk and Sed - Three Very Useful Command-Line Utilities",
+      "url": "https://www.youtube.com/watch?v=nLa6jAbULe8",
+      "type": "VIDEO",
+      "source": "YouTube (Corey Schafer)",
+      "duration": "30 min",
+      "isRequired": false,
+      "sortOrder": 3
+    },
+    {
+      "title": "GNU Grep Manual",
+      "url": "https://www.gnu.org/software/grep/manual/grep.html",
+      "type": "DOCS",
+      "source": "GNU Project",
+      "duration": "Reference",
+      "isRequired": false,
+      "sortOrder": 4
+    },
+    {
+      "title": "sed & awk, 2nd Edition - O'Reilly Open Book Summary",
+      "url": "https://github.com/learnbyexample/learn_gnuawk",
+      "type": "REPO",
+      "source": "GitHub",
+      "duration": "2h",
+      "isRequired": false,
+      "sortOrder": 5
+    }
+  ],
+  "quiz": {
+    "title": "Day 3 Quiz: Text Processing",
+    "passingScore": 70,
+    "questions": [
+      {
+        "questionText": "Which command searches for a pattern in files and returns matching lines?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "grep (Global Regular Expression Print) searches for patterns in files and prints lines that match. It is one of the most commonly used Linux commands.",
+        "options": [
+          {"id": "a", "text": "find", "isCorrect": false},
+          {"id": "b", "text": "grep", "isCorrect": true},
+          {"id": "c", "text": "locate", "isCorrect": false},
+          {"id": "d", "text": "which", "isCorrect": false}
+        ],
+        "sortOrder": 1
+      },
+      {
+        "questionText": "What does the command `grep -r 'ERROR' /var/log/` do?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "The '-r' flag tells grep to search recursively through all files in the specified directory and its subdirectories for lines containing 'ERROR'.",
+        "options": [
+          {"id": "a", "text": "Replaces 'ERROR' in all log files", "isCorrect": false},
+          {"id": "b", "text": "Searches for 'ERROR' in reverse order", "isCorrect": false},
+          {"id": "c", "text": "Recursively searches for 'ERROR' in all files under /var/log/", "isCorrect": true},
+          {"id": "d", "text": "Counts occurrences of 'ERROR' in logs", "isCorrect": false}
+        ],
+        "sortOrder": 2
+      },
+      {
+        "questionText": "What does the pipe operator '|' do in Linux?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "The pipe operator takes the standard output (stdout) of the command on the left and feeds it as standard input (stdin) to the command on the right, allowing you to chain commands together.",
+        "options": [
+          {"id": "a", "text": "Redirects output to a file", "isCorrect": false},
+          {"id": "b", "text": "Runs two commands simultaneously", "isCorrect": false},
+          {"id": "c", "text": "Passes the output of one command as input to another", "isCorrect": true},
+          {"id": "d", "text": "Compares the output of two commands", "isCorrect": false}
+        ],
+        "sortOrder": 3
+      },
+      {
+        "questionText": "Which sed command replaces all occurrences of 'http' with 'https' in a file?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "In sed, 's/old/new/g' is the substitution syntax. The 'g' flag means global (all occurrences per line). Without 'g', only the first occurrence on each line is replaced.",
+        "options": [
+          {"id": "a", "text": "sed 's/http/https/' file.txt", "isCorrect": false},
+          {"id": "b", "text": "sed 's/http/https/g' file.txt", "isCorrect": true},
+          {"id": "c", "text": "sed 'replace http https' file.txt", "isCorrect": false},
+          {"id": "d", "text": "sed -r 'http' 'https' file.txt", "isCorrect": false}
+        ],
+        "sortOrder": 4
+      },
+      {
+        "questionText": "What does `awk '{print $1}' file.txt` output?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "In awk, $1 refers to the first field (column) of each line. By default, awk splits lines by whitespace. So this command prints only the first column of each line.",
+        "options": [
+          {"id": "a", "text": "The first line of the file", "isCorrect": false},
+          {"id": "b", "text": "The first character of each line", "isCorrect": false},
+          {"id": "c", "text": "The first column/field of each line", "isCorrect": true},
+          {"id": "d", "text": "The first word of the file", "isCorrect": false}
+        ],
+        "sortOrder": 5
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "title": "Log File Analysis with grep",
+      "description": "1. Create a sample log file:\n   ```\n   echo '2024-01-15 10:00:01 INFO Application started\n   2024-01-15 10:05:23 ERROR Database connection failed\n   2024-01-15 10:05:24 WARN Retrying connection...\n   2024-01-15 10:05:25 INFO Connection restored\n   2024-01-15 10:10:00 ERROR Disk space low on /var\n   2024-01-15 10:15:00 INFO Health check passed\n   2024-01-15 10:20:00 ERROR Memory threshold exceeded\n   2024-01-15 10:25:00 WARN CPU usage above 80%' > sample.log\n   ```\n2. Find all ERROR lines: `grep 'ERROR' sample.log`\n3. Count error lines: `grep -c 'ERROR' sample.log`\n4. Find lines NOT containing INFO: `grep -v 'INFO' sample.log`\n5. Use case-insensitive search: `grep -i 'error' sample.log`\n6. Show line numbers: `grep -n 'ERROR' sample.log`\n7. Search with regex for any timestamp at 10:05: `grep '10:05' sample.log`",
+      "difficulty": "BEGINNER",
+      "xpReward": 40,
+      "hints": [
+        "Combine flags: grep -cn will count and also try to show line numbers (count wins)",
+        "Use grep -E for extended regex to match patterns like 'ERROR|WARN'"
+      ],
+      "sortOrder": 1
+    },
+    {
+      "title": "Text Transformation with sed and awk",
+      "description": "1. Using the sample.log from the previous task:\n2. Replace all 'ERROR' with 'CRITICAL': `sed 's/ERROR/CRITICAL/g' sample.log`\n3. Delete all lines containing 'INFO': `sed '/INFO/d' sample.log`\n4. Extract just the timestamps: `awk '{print $1, $2}' sample.log`\n5. Extract just the log levels: `awk '{print $3}' sample.log`\n6. Count occurrences of each log level: `awk '{print $3}' sample.log | sort | uniq -c | sort -rn`\n7. Print only ERROR lines using awk: `awk '/ERROR/ {print}' sample.log`\n8. Challenge: Extract the hour from each timestamp using awk with field separator: `awk -F'[ :]' '{print $4}' sample.log`",
+      "difficulty": "INTERMEDIATE",
+      "xpReward": 50,
+      "hints": [
+        "The -i flag in sed edits the file in-place (be careful!). Without it, sed outputs to stdout.",
+        "In awk, -F sets the field separator. You can use regex as a separator."
+      ],
+      "sortOrder": 2
+    }
+  ]
+}

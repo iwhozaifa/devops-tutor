@@ -1,0 +1,130 @@
+{
+  "dayNumber": 5,
+  "title": "Process Management & System Monitoring",
+  "summary": "Learn how to view, manage, and monitor processes in Linux. Understand foreground/background processes, signals, resource monitoring with top/htop, and how to troubleshoot system performance issues.",
+  "resources": [
+    {
+      "title": "Linux Journey - Processes",
+      "url": "https://linuxjourney.com/lesson/monitor-processes-ps-command",
+      "type": "COURSE",
+      "source": "Linux Journey",
+      "duration": "25 min",
+      "isRequired": true,
+      "sortOrder": 1
+    },
+    {
+      "title": "The Linux Command Line - Chapter 10-11: Processes",
+      "url": "https://linuxcommand.org/tlcl.php",
+      "type": "ARTICLE",
+      "source": "linuxcommand.org",
+      "duration": "1h",
+      "isRequired": true,
+      "sortOrder": 2
+    },
+    {
+      "title": "Linux Process Management - Explained",
+      "url": "https://www.youtube.com/watch?v=ls5cGi12kGI",
+      "type": "VIDEO",
+      "source": "YouTube (tutoriaLinux)",
+      "duration": "15 min",
+      "isRequired": false,
+      "sortOrder": 3
+    },
+    {
+      "title": "htop - An Interactive Process Viewer",
+      "url": "https://github.com/htop-dev/htop",
+      "type": "REPO",
+      "source": "GitHub",
+      "duration": "Reference",
+      "isRequired": false,
+      "sortOrder": 4
+    },
+    {
+      "title": "Linux Performance Observability Tools",
+      "url": "https://www.brendangregg.com/linuxperf.html",
+      "type": "ARTICLE",
+      "source": "Brendan Gregg",
+      "duration": "Reference",
+      "isRequired": false,
+      "sortOrder": 5
+    }
+  ],
+  "quiz": {
+    "title": "Day 5 Quiz: Process Management",
+    "passingScore": 70,
+    "questions": [
+      {
+        "questionText": "What signal does 'kill -9' send to a process?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "Signal 9 is SIGKILL, which forces immediate termination of a process. Unlike SIGTERM (15), it cannot be caught or ignored by the process.",
+        "options": [
+          {"id": "a", "text": "SIGTERM", "isCorrect": false},
+          {"id": "b", "text": "SIGHUP", "isCorrect": false},
+          {"id": "c", "text": "SIGKILL", "isCorrect": true},
+          {"id": "d", "text": "SIGINT", "isCorrect": false}
+        ],
+        "sortOrder": 1
+      },
+      {
+        "questionText": "What command shows a real-time, continuously updating view of running processes?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "The 'top' command provides a dynamic real-time view of running processes, showing CPU usage, memory usage, and more. 'htop' is an enhanced alternative.",
+        "options": [
+          {"id": "a", "text": "ps", "isCorrect": false},
+          {"id": "b", "text": "top", "isCorrect": true},
+          {"id": "c", "text": "ls", "isCorrect": false},
+          {"id": "d", "text": "jobs", "isCorrect": false}
+        ],
+        "sortOrder": 2
+      },
+      {
+        "questionText": "How do you run a command in the background in Bash?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "Appending '&' to a command runs it in the background, returning control to the terminal immediately. You can use 'jobs' to see background processes and 'fg' to bring them back.",
+        "options": [
+          {"id": "a", "text": "bg command", "isCorrect": false},
+          {"id": "b", "text": "command &", "isCorrect": true},
+          {"id": "c", "text": "nohup command", "isCorrect": false},
+          {"id": "d", "text": "command --background", "isCorrect": false}
+        ],
+        "sortOrder": 3
+      },
+      {
+        "questionText": "What does the 'ps aux' command display?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "'ps aux' shows all running processes for all users. 'a' shows processes for all users, 'u' shows user/owner, and 'x' includes processes without a terminal.",
+        "options": [
+          {"id": "a", "text": "Only the current user's processes", "isCorrect": false},
+          {"id": "b", "text": "All processes for all users with detailed info", "isCorrect": true},
+          {"id": "c", "text": "Only background processes", "isCorrect": false},
+          {"id": "d", "text": "Processes sorted by memory usage", "isCorrect": false}
+        ],
+        "sortOrder": 4
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "title": "Process Exploration and Management",
+      "description": "1. List all running processes: `ps aux`\n2. Find a specific process (e.g., bash): `ps aux | grep bash`\n3. Run `top` and observe the output for 30 seconds (press 'q' to quit)\n4. Start a background process: `sleep 300 &`\n5. View background jobs: `jobs`\n6. Get the PID: `echo $!`\n7. Check the process: `ps -p <PID>`\n8. Send SIGTERM: `kill <PID>`\n9. Start another: `sleep 300 &` then force kill: `kill -9 <PID>`\n10. Install and explore htop: `sudo apt install htop && htop`",
+      "difficulty": "BEGINNER",
+      "xpReward": 40,
+      "hints": [
+        "Use 'pgrep' to find process IDs by name: pgrep sleep",
+        "In htop, press F6 to sort by different columns and F5 for tree view"
+      ],
+      "sortOrder": 1
+    },
+    {
+      "title": "System Monitoring Script",
+      "description": "1. Create a script `monitor.sh` that reports:\n   - CPU usage: `top -bn1 | grep 'Cpu(s)' | awk '{print $2}'`\n   - Memory usage: `free -m | awk '/Mem:/ {printf \"%.1f%%\", $3/$2 * 100}'`\n   - Disk usage: `df -h / | awk 'NR==2 {print $5}'`\n   - Top 5 processes by CPU: `ps aux --sort=-%cpu | head -6`\n   - Number of running processes: `ps aux | wc -l`\n2. Add color output using ANSI codes (e.g., `echo -e \"\\033[31mWARNING\\033[0m\"`)\n3. Add a threshold check: if disk usage > 80%, print a warning\n4. Make it accept a `--watch` flag that reruns every 5 seconds using a while loop",
+      "difficulty": "INTERMEDIATE",
+      "xpReward": 60,
+      "hints": [
+        "To get just the number from disk usage: df / | awk 'NR==2 {print $5}' | tr -d '%'",
+        "For the watch mode: while true; do clear; ./monitor.sh; sleep 5; done"
+      ],
+      "sortOrder": 2
+    }
+  ]
+}

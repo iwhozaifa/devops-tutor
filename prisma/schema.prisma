@@ -1,0 +1,442 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Auth Models ───────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  enrollments   Enrollment[]
+  dayProgress   DayProgress[]
+  quizAttempts  QuizAttempt[]
+  examAttempts  ExamAttempt[]
+  taskSubmissions TaskSubmission[]
+  projectProgress ProjectProgress[]
+  xpLedger      XpLedger[]
+  badges        UserBadge[]
+  streak        Streak?
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─── Subject & Curriculum ──────────────────────────────────
+
+model Subject {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  description String
+  icon        String?
+  isPublished Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  modules        Module[]
+  enrollments    Enrollment[]
+  certifications Certification[]
+  projects       Project[]
+}
+
+model Module {
+  id          String   @id @default(cuid())
+  subjectId   String
+  slug        String
+  title       String
+  description String
+  weekStart   Int
+  weekEnd     Int
+  sortOrder   Int
+  createdAt   DateTime @default(now())
+
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  days    Day[]
+
+  @@unique([subjectId, slug])
+}
+
+model Day {
+  id        String   @id @default(cuid())
+  moduleId  String
+  dayNumber Int
+  title     String
+  summary   String
+  sortOrder Int
+  createdAt DateTime @default(now())
+
+  module    Module       @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  resources Resource[]
+  quizzes   Quiz[]
+  tasks     DailyTask[]
+  progress  DayProgress[]
+
+  @@unique([moduleId, dayNumber])
+}
+
+// ─── Resources ─────────────────────────────────────────────
+
+enum ResourceType {
+  VIDEO
+  ARTICLE
+  REPO
+  DOCS
+  COURSE
+  TOOL
+}
+
+model Resource {
+  id        String       @id @default(cuid())
+  dayId     String
+  title     String
+  url       String
+  type      ResourceType
+  source    String?
+  duration  String?
+  isRequired Boolean     @default(true)
+  sortOrder Int
+  createdAt DateTime     @default(now())
+
+  day Day @relation(fields: [dayId], references: [id], onDelete: Cascade)
+}
+
+// ─── Quizzes ───────────────────────────────────────────────
+
+enum QuestionType {
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+}
+
+model Quiz {
+  id           String   @id @default(cuid())
+  dayId        String
+  title        String
+  description  String?
+  passingScore Int      @default(70)
+  sortOrder    Int
+  createdAt    DateTime @default(now())
+
+  day       Day            @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  questions QuizQuestion[]
+  attempts  QuizAttempt[]
+}
+
+model QuizQuestion {
+  id           String       @id @default(cuid())
+  quizId       String
+  questionText String
+  explanation  String?
+  questionType QuestionType
+  options      Json
+  sortOrder    Int
+  createdAt    DateTime     @default(now())
+
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+}
+
+// ─── Certifications & Exams ────────────────────────────────
+
+model Certification {
+  id        String   @id @default(cuid())
+  subjectId String
+  slug      String   @unique
+  title     String
+  provider  String
+  createdAt DateTime @default(now())
+
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  exams   Exam[]
+}
+
+model Exam {
+  id              String   @id @default(cuid())
+  certificationId String
+  title           String
+  description     String?
+  timeLimit       Int
+  passingScore    Int      @default(65)
+  questionCount   Int
+  createdAt       DateTime @default(now())
+
+  certification Certification  @relation(fields: [certificationId], references: [id], onDelete: Cascade)
+  questions     ExamQuestion[]
+  attempts      ExamAttempt[]
+}
+
+model ExamQuestion {
+  id           String       @id @default(cuid())
+  examId       String
+  questionText String
+  explanation  String?
+  questionType QuestionType
+  options      Json
+  domain       String?
+  sortOrder    Int
+  createdAt    DateTime     @default(now())
+
+  exam Exam @relation(fields: [examId], references: [id], onDelete: Cascade)
+}
+
+// ─── Daily Tasks & Projects ────────────────────────────────
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+model DailyTask {
+  id          String     @id @default(cuid())
+  dayId       String
+  title       String
+  description String
+  difficulty  Difficulty
+  xpReward    Int        @default(50)
+  hints       Json?
+  solution    String?
+  sortOrder   Int
+  createdAt   DateTime   @default(now())
+
+  day         Day              @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  submissions TaskSubmission[]
+}
+
+model Project {
+  id          String     @id @default(cuid())
+  subjectId   String?
+  moduleId    String?
+  title       String
+  description String
+  difficulty  Difficulty
+  xpReward    Int        @default(500)
+  steps       Json
+  repoUrl     String?
+  createdAt   DateTime   @default(now())
+
+  subject  Subject?          @relation(fields: [subjectId], references: [id])
+  progress ProjectProgress[]
+}
+
+// ─── Progress & Tracking ───────────────────────────────────
+
+enum EnrollmentStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+model Enrollment {
+  id         String           @id @default(cuid())
+  userId     String
+  subjectId  String
+  enrolledAt DateTime         @default(now())
+  status     EnrollmentStatus @default(ACTIVE)
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, subjectId])
+}
+
+enum ProgressStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+model DayProgress {
+  id          String         @id @default(cuid())
+  userId      String
+  dayId       String
+  status      ProgressStatus @default(NOT_STARTED)
+  completedAt DateTime?
+  createdAt   DateTime       @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  day  Day  @relation(fields: [dayId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dayId])
+}
+
+model QuizAttempt {
+  id          String   @id @default(cuid())
+  userId      String
+  quizId      String
+  score       Int
+  answers     Json
+  passed      Boolean
+  completedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+}
+
+model ExamAttempt {
+  id          String   @id @default(cuid())
+  userId      String
+  examId      String
+  score       Int
+  answers     Json
+  passed      Boolean
+  timeSpent   Int
+  completedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exam Exam @relation(fields: [examId], references: [id], onDelete: Cascade)
+}
+
+enum TaskStatus {
+  ATTEMPTED
+  COMPLETED
+  SKIPPED
+}
+
+model TaskSubmission {
+  id          String     @id @default(cuid())
+  userId      String
+  taskId      String
+  status      TaskStatus
+  notes       String?
+  submittedAt DateTime   @default(now())
+
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task DailyTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, taskId])
+}
+
+model ProjectProgress {
+  id          String         @id @default(cuid())
+  userId      String
+  projectId   String
+  currentStep Int            @default(0)
+  status      ProgressStatus @default(NOT_STARTED)
+  completedAt DateTime?
+  createdAt   DateTime       @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+}
+
+// ─── Gamification ──────────────────────────────────────────
+
+enum XpSource {
+  QUIZ_PASS
+  EXAM_PASS
+  TASK_COMPLETE
+  DAY_COMPLETE
+  PROJECT_STEP
+  PROJECT_COMPLETE
+  STREAK_BONUS
+  BADGE_EARNED
+}
+
+model XpLedger {
+  id          String   @id @default(cuid())
+  userId      String
+  amount      Int
+  source      XpSource
+  sourceId    String?
+  description String?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+enum BadgeCategory {
+  STREAK
+  COMPLETION
+  QUIZ
+  EXAM
+  PROJECT
+  SPECIAL
+}
+
+model Badge {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  title       String
+  description String
+  icon        String
+  category    BadgeCategory
+  trigger     Json
+  xpReward    Int           @default(0)
+  createdAt   DateTime      @default(now())
+
+  users UserBadge[]
+}
+
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  badgeId  String
+  earnedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+}
+
+model Streak {
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  currentStreak  Int       @default(0)
+  longestStreak  Int       @default(0)
+  lastActiveDate DateTime?
+  updatedAt      DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

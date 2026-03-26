@@ -1,0 +1,7 @@
+{
+  "slug": "devops",
+  "title": "DevOps Engineering",
+  "description": "Master DevOps tools and practices — from Linux fundamentals and networking to CI/CD, containers, Kubernetes, and cloud infrastructure. Structured around real certification paths.",
+  "icon": "server",
+  "isPublished": true
+}

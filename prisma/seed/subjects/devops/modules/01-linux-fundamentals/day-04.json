@@ -1,0 +1,130 @@
+{
+  "dayNumber": 4,
+  "title": "Shell Scripting Basics",
+  "summary": "Learn to write Bash scripts to automate repetitive tasks. Cover variables, conditionals, loops, functions, and command-line arguments. Shell scripting is a core DevOps skill used in CI/CD pipelines, deployment automation, and system administration.",
+  "resources": [
+    {
+      "title": "Linux Journey - Shell Scripting",
+      "url": "https://linuxjourney.com/lesson/the-shell",
+      "type": "COURSE",
+      "source": "Linux Journey",
+      "duration": "20 min",
+      "isRequired": true,
+      "sortOrder": 1
+    },
+    {
+      "title": "The Linux Command Line - Chapters 24-33: Shell Scripting",
+      "url": "https://linuxcommand.org/tlcl.php",
+      "type": "ARTICLE",
+      "source": "linuxcommand.org",
+      "duration": "2h",
+      "isRequired": true,
+      "sortOrder": 2
+    },
+    {
+      "title": "Bash Scripting Tutorial for Beginners",
+      "url": "https://www.youtube.com/watch?v=tK9Oc6AEnR4",
+      "type": "VIDEO",
+      "source": "YouTube (Learn Linux TV)",
+      "duration": "1h",
+      "isRequired": false,
+      "sortOrder": 3
+    },
+    {
+      "title": "Pure Bash Bible",
+      "url": "https://github.com/dylanaraps/pure-bash-bible",
+      "type": "REPO",
+      "source": "GitHub",
+      "duration": "Reference",
+      "isRequired": false,
+      "sortOrder": 4
+    },
+    {
+      "title": "ShellCheck - Shell Script Analysis Tool",
+      "url": "https://www.shellcheck.net/",
+      "type": "DOCS",
+      "source": "ShellCheck",
+      "duration": "Reference",
+      "isRequired": false,
+      "sortOrder": 5
+    }
+  ],
+  "quiz": {
+    "title": "Day 4 Quiz: Shell Scripting Basics",
+    "passingScore": 70,
+    "questions": [
+      {
+        "questionText": "What is the correct shebang line for a Bash script?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "The shebang line '#!/bin/bash' tells the system to use the Bash interpreter to execute the script. It must be the very first line of the file.",
+        "options": [
+          {"id": "a", "text": "#/bin/bash", "isCorrect": false},
+          {"id": "b", "text": "#!/bin/bash", "isCorrect": true},
+          {"id": "c", "text": "##/bin/bash", "isCorrect": false},
+          {"id": "d", "text": "!#/bin/bash", "isCorrect": false}
+        ],
+        "sortOrder": 1
+      },
+      {
+        "questionText": "How do you assign a value to a variable in Bash?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "In Bash, variables are assigned using the syntax NAME=value with NO spaces around the equals sign. Spaces will cause errors.",
+        "options": [
+          {"id": "a", "text": "NAME = 'value'", "isCorrect": false},
+          {"id": "b", "text": "$NAME = 'value'", "isCorrect": false},
+          {"id": "c", "text": "NAME='value'", "isCorrect": true},
+          {"id": "d", "text": "set NAME 'value'", "isCorrect": false}
+        ],
+        "sortOrder": 2
+      },
+      {
+        "questionText": "What does '$?' represent in Bash?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "$? holds the exit status of the last executed command. An exit status of 0 means success, while any non-zero value indicates failure.",
+        "options": [
+          {"id": "a", "text": "The current process ID", "isCorrect": false},
+          {"id": "b", "text": "The number of arguments passed to the script", "isCorrect": false},
+          {"id": "c", "text": "The exit status of the last command", "isCorrect": true},
+          {"id": "d", "text": "The name of the current script", "isCorrect": false}
+        ],
+        "sortOrder": 3
+      },
+      {
+        "questionText": "Which loop syntax correctly iterates over a list in Bash?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "The 'for item in list; do ... done' syntax iterates over each element. The semicolons can be replaced with newlines.",
+        "options": [
+          {"id": "a", "text": "for item in 1 2 3; do echo $item; done", "isCorrect": true},
+          {"id": "b", "text": "for (item in 1 2 3) { echo $item }", "isCorrect": false},
+          {"id": "c", "text": "foreach item (1 2 3); echo $item; end", "isCorrect": false},
+          {"id": "d", "text": "loop item in 1 2 3; do echo $item; done", "isCorrect": false}
+        ],
+        "sortOrder": 4
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "title": "Write Your First Bash Script",
+      "description": "1. Create a file called `system-info.sh`\n2. Add the shebang: `#!/bin/bash`\n3. Add commands to display:\n   - Current date and time: `date`\n   - Hostname: `hostname`\n   - Current user: `whoami`\n   - Uptime: `uptime`\n   - Disk usage: `df -h /`\n   - Memory usage: `free -m`\n4. Make the script executable: `chmod +x system-info.sh`\n5. Run it: `./system-info.sh`\n6. Add a variable for a separator line and use it between sections\n7. Add comments explaining each section",
+      "difficulty": "BEGINNER",
+      "xpReward": 40,
+      "hints": [
+        "Use echo '' for blank lines and echo '========' for separators to improve readability",
+        "Variables: SEPARATOR='================================' then echo $SEPARATOR"
+      ],
+      "sortOrder": 1
+    },
+    {
+      "title": "Build a Log Monitoring Script",
+      "description": "1. Create a script called `log-monitor.sh` that:\n2. Accepts a log file path as a command-line argument (`$1`)\n3. Checks if the file exists using `if [ -f \"$1\" ]`\n4. If no argument given, prints usage: \"Usage: ./log-monitor.sh <logfile>\"\n5. Counts ERROR, WARN, and INFO lines using grep -c\n6. Displays a summary report with the counts\n7. If ERROR count > 0, prints the error lines\n8. Exit with code 1 if there are errors, 0 if clean\n9. Test it with the sample.log from Day 3\n10. Run `shellcheck log-monitor.sh` to check for common issues (install with your package manager if needed)",
+      "difficulty": "INTERMEDIATE",
+      "xpReward": 60,
+      "hints": [
+        "Check argument count with: if [ $# -eq 0 ]; then echo 'Usage...'; exit 1; fi",
+        "Store grep count in a variable: ERROR_COUNT=$(grep -c 'ERROR' \"$1\")"
+      ],
+      "sortOrder": 2
+    }
+  ]
+}

@@ -1,0 +1,130 @@
+{
+  "dayNumber": 10,
+  "title": "Remote Repositories & GitHub",
+  "summary": "Learn to work with remote repositories on GitHub. Understand push, pull, fetch, clone, and how to collaborate using forks and pull requests. This is how modern teams share and review code.",
+  "resources": [
+    {
+      "title": "Pro Git Book - Chapter 5: Distributed Git",
+      "url": "https://git-scm.com/book/en/v2/Distributed-Git-Distributed-Workflows",
+      "type": "ARTICLE",
+      "source": "git-scm.com",
+      "duration": "30 min",
+      "isRequired": true,
+      "sortOrder": 1
+    },
+    {
+      "title": "GitHub Quickstart Guide",
+      "url": "https://docs.github.com/en/get-started/quickstart",
+      "type": "DOCS",
+      "source": "GitHub",
+      "duration": "30 min",
+      "isRequired": true,
+      "sortOrder": 2
+    },
+    {
+      "title": "Git and GitHub for Beginners - Crash Course",
+      "url": "https://www.youtube.com/watch?v=RGOj5yH7evk",
+      "type": "VIDEO",
+      "source": "YouTube (freeCodeCamp)",
+      "duration": "1h",
+      "isRequired": false,
+      "sortOrder": 3
+    },
+    {
+      "title": "GitHub Skills - Interactive Courses",
+      "url": "https://skills.github.com/",
+      "type": "COURSE",
+      "source": "GitHub",
+      "duration": "Varies",
+      "isRequired": false,
+      "sortOrder": 4
+    },
+    {
+      "title": "First Contributions - Practice Making PRs",
+      "url": "https://github.com/firstcontributions/first-contributions",
+      "type": "REPO",
+      "source": "GitHub",
+      "duration": "30 min",
+      "isRequired": false,
+      "sortOrder": 5
+    }
+  ],
+  "quiz": {
+    "title": "Day 10 Quiz: Remote Repositories & GitHub",
+    "passingScore": 70,
+    "questions": [
+      {
+        "questionText": "What does 'git push origin main' do?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "'git push origin main' uploads your local main branch commits to the remote repository named 'origin'. 'origin' is the default name for the remote you cloned from.",
+        "options": [
+          {"id": "a", "text": "Downloads changes from the remote main branch", "isCorrect": false},
+          {"id": "b", "text": "Creates a new remote called origin", "isCorrect": false},
+          {"id": "c", "text": "Uploads local main branch commits to the remote", "isCorrect": true},
+          {"id": "d", "text": "Merges origin into main locally", "isCorrect": false}
+        ],
+        "sortOrder": 1
+      },
+      {
+        "questionText": "What is the difference between 'git fetch' and 'git pull'?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "'git fetch' downloads new data from the remote but does not merge it. 'git pull' is equivalent to 'git fetch' followed by 'git merge'. Fetch is safer as it lets you review changes before merging.",
+        "options": [
+          {"id": "a", "text": "They are identical commands", "isCorrect": false},
+          {"id": "b", "text": "fetch downloads without merging; pull downloads and merges", "isCorrect": true},
+          {"id": "c", "text": "fetch is for branches; pull is for tags", "isCorrect": false},
+          {"id": "d", "text": "pull downloads without merging; fetch downloads and merges", "isCorrect": false}
+        ],
+        "sortOrder": 2
+      },
+      {
+        "questionText": "What is a fork on GitHub?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "A fork is a personal copy of someone else's repository on your GitHub account. You can freely make changes to your fork, and then submit a pull request to the original repository to propose your changes.",
+        "options": [
+          {"id": "a", "text": "A branch within the same repository", "isCorrect": false},
+          {"id": "b", "text": "A personal copy of another user's repository on your account", "isCorrect": true},
+          {"id": "c", "text": "A way to delete a repository", "isCorrect": false},
+          {"id": "d", "text": "A Git command for splitting commits", "isCorrect": false}
+        ],
+        "sortOrder": 3
+      },
+      {
+        "questionText": "How do you set up a remote for an existing local repository?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "'git remote add origin <url>' adds a new remote named 'origin' pointing to the specified URL. You can then push to this remote.",
+        "options": [
+          {"id": "a", "text": "git remote add origin <url>", "isCorrect": true},
+          {"id": "b", "text": "git push --new origin <url>", "isCorrect": false},
+          {"id": "c", "text": "git connect origin <url>", "isCorrect": false},
+          {"id": "d", "text": "git init --remote <url>", "isCorrect": false}
+        ],
+        "sortOrder": 4
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "title": "Push Your Project to GitHub",
+      "description": "1. Create a new repository on GitHub (do NOT initialize with README)\n2. In your local project, add the remote:\n   ```\n   git remote add origin https://github.com/YOUR_USERNAME/my-devops-project.git\n   ```\n3. Verify: `git remote -v`\n4. Push: `git push -u origin main`\n5. Verify on GitHub that your code appears\n6. Make a change locally, commit, and push again\n7. On GitHub, edit a file directly through the web UI\n8. Pull the change locally: `git pull origin main`\n9. View the synchronized history: `git log --oneline`",
+      "difficulty": "BEGINNER",
+      "xpReward": 40,
+      "hints": [
+        "The '-u' flag in 'git push -u origin main' sets up tracking so future pushes only need 'git push'",
+        "If you get authentication errors, set up a Personal Access Token or SSH key"
+      ],
+      "sortOrder": 1
+    },
+    {
+      "title": "Make Your First Pull Request",
+      "description": "1. Go to https://github.com/firstcontributions/first-contributions\n2. Fork the repository to your account\n3. Clone your fork: `git clone https://github.com/YOUR_USERNAME/first-contributions.git`\n4. Create a branch: `git switch -c add-your-name`\n5. Add your name to `Contributors.md`\n6. Commit and push: `git push origin add-your-name`\n7. Go to your fork on GitHub and create a Pull Request\n8. Write a clear PR description\n9. Observe how the PR appears on the original repository\n10. Bonus: Add the original repo as an upstream remote:\n    ```\n    git remote add upstream https://github.com/firstcontributions/first-contributions.git\n    git fetch upstream\n    ```",
+      "difficulty": "INTERMEDIATE",
+      "xpReward": 60,
+      "hints": [
+        "Keep your fork updated by fetching from upstream and merging into your main branch",
+        "A good PR description explains WHAT changed and WHY"
+      ],
+      "sortOrder": 2
+    }
+  ]
+}

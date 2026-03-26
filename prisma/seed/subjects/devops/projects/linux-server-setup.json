@@ -1,0 +1,110 @@
+{
+  "title": "Set Up a Production Linux Server",
+  "description": "Configure a Linux server from scratch for hosting web applications. Covers SSH hardening, firewall setup, Nginx reverse proxy, SSL certificates, and basic monitoring.",
+  "difficulty": "INTERMEDIATE",
+  "xpReward": 750,
+  "repoUrl": null,
+  "steps": [
+    {
+      "stepNumber": 1,
+      "title": "Initial Server Setup",
+      "description": "Provision a fresh Linux server and perform the essential first steps.\n\n1. Spin up a VPS with Ubuntu 22.04+ (e.g., DigitalOcean, Linode, or Hetzner)\n2. Log in as root via SSH for the first time\n3. Update all packages with `apt update && apt upgrade -y`\n4. Set the hostname and timezone (`hostnamectl set-hostname`, `timedatectl set-timezone`)\n5. Create a non-root user with sudo privileges (`adduser deploy && usermod -aG sudo deploy`)\n6. Verify you can log in as the new user and run sudo commands",
+      "checkpoints": [
+        "VPS is provisioned and accessible via SSH",
+        "All system packages are updated",
+        "Hostname and timezone are configured",
+        "Non-root user with sudo access is created",
+        "Able to SSH in as the new user and run sudo"
+      ]
+    },
+    {
+      "stepNumber": 2,
+      "title": "SSH Hardening",
+      "description": "Secure SSH access to prevent unauthorized login attempts.\n\n1. Generate an SSH key pair on your local machine if you don't have one (`ssh-keygen -t ed25519`)\n2. Copy your public key to the server (`ssh-copy-id deploy@your-server-ip`)\n3. Edit `/etc/ssh/sshd_config` to disable root login (`PermitRootLogin no`)\n4. Disable password authentication (`PasswordAuthentication no`)\n5. Change the default SSH port to a non-standard port (e.g., 2222)\n6. Restart the SSH service and verify you can still connect with your key",
+      "checkpoints": [
+        "SSH key-based authentication is working",
+        "Root login via SSH is disabled",
+        "Password authentication is disabled",
+        "SSH port changed from default 22",
+        "SSH service restarts cleanly and connection works on new port"
+      ]
+    },
+    {
+      "stepNumber": 3,
+      "title": "Firewall Configuration",
+      "description": "Set up UFW to control inbound and outbound traffic.\n\n1. Install and enable UFW (`apt install ufw`)\n2. Set the default policies: deny incoming, allow outgoing\n3. Allow your custom SSH port (`ufw allow 2222/tcp`)\n4. Allow HTTP (80) and HTTPS (443) traffic\n5. Enable the firewall (`ufw enable`) and verify the rules with `ufw status verbose`\n6. Optionally install and configure Fail2Ban to block brute-force attempts",
+      "checkpoints": [
+        "UFW is installed and enabled",
+        "Default policy denies incoming traffic",
+        "SSH, HTTP, and HTTPS ports are allowed",
+        "ufw status shows correct rules",
+        "Fail2Ban is installed and monitoring SSH (optional but recommended)"
+      ]
+    },
+    {
+      "stepNumber": 4,
+      "title": "Install and Configure Nginx",
+      "description": "Set up Nginx as a reverse proxy for your web application.\n\n1. Install Nginx (`apt install nginx`)\n2. Verify Nginx is running by visiting your server's IP in a browser\n3. Create a new server block config in `/etc/nginx/sites-available/your-app`\n4. Configure it as a reverse proxy to `localhost:3000` (or your app's port)\n5. Enable the site by symlinking to `sites-enabled` and remove the default site\n6. Test the config (`nginx -t`) and reload Nginx\n7. Verify your proxy works by running a test app on the backend port",
+      "checkpoints": [
+        "Nginx is installed and running",
+        "Custom server block config exists in sites-available",
+        "Config proxies requests to the backend application port",
+        "Site is enabled via symlink in sites-enabled",
+        "nginx -t passes without errors",
+        "Requests to the server IP are proxied to the backend"
+      ]
+    },
+    {
+      "stepNumber": 5,
+      "title": "SSL/TLS with Let's Encrypt",
+      "description": "Secure your server with a free SSL certificate from Let's Encrypt.\n\n1. Point a domain name to your server's IP address (add an A record in DNS)\n2. Install Certbot and the Nginx plugin (`apt install certbot python3-certbot-nginx`)\n3. Obtain a certificate (`certbot --nginx -d yourdomain.com`)\n4. Verify the certificate is installed by visiting `https://yourdomain.com`\n5. Check that HTTP automatically redirects to HTTPS\n6. Verify auto-renewal is set up (`certbot renew --dry-run`)",
+      "checkpoints": [
+        "Domain DNS A record points to server IP",
+        "Certbot is installed with the Nginx plugin",
+        "SSL certificate is obtained and applied",
+        "Site is accessible over HTTPS",
+        "HTTP to HTTPS redirect is working",
+        "Certificate auto-renewal dry run succeeds"
+      ]
+    },
+    {
+      "stepNumber": 6,
+      "title": "Deploy a Web Application",
+      "description": "Deploy an actual application and manage it with a process manager.\n\n1. Install Node.js via nvm or the NodeSource repository\n2. Clone your application repository to `/var/www/your-app`\n3. Install dependencies and build the app\n4. Install PM2 globally (`npm install -g pm2`) to manage the process\n5. Start your app with PM2 (`pm2 start index.js --name your-app`)\n6. Configure PM2 to start on boot (`pm2 startup && pm2 save`)\n7. Verify the app is accessible through your domain over HTTPS",
+      "checkpoints": [
+        "Node.js is installed on the server",
+        "Application code is deployed to /var/www/your-app",
+        "Dependencies are installed and app builds successfully",
+        "PM2 is running the application process",
+        "PM2 is configured to auto-start on reboot",
+        "Application is accessible via the domain over HTTPS"
+      ]
+    },
+    {
+      "stepNumber": 7,
+      "title": "Monitoring and Logging",
+      "description": "Set up basic monitoring so you know when something goes wrong.\n\n1. Configure Nginx access and error log rotation with `logrotate`\n2. Install and configure a monitoring tool (e.g., Netdata for real-time metrics)\n3. Set up `pm2 monit` to watch application CPU and memory usage\n4. Configure unattended security updates (`apt install unattended-upgrades`)\n5. Set up a simple uptime check (e.g., UptimeRobot or a cron-based curl check)\n6. Review logs with `journalctl` and verify log output from your app and Nginx",
+      "checkpoints": [
+        "Log rotation is configured for Nginx logs",
+        "Monitoring dashboard is accessible (Netdata or similar)",
+        "PM2 shows application metrics",
+        "Unattended security upgrades are enabled",
+        "Uptime monitoring is configured and reporting",
+        "Logs are accessible via journalctl"
+      ]
+    },
+    {
+      "stepNumber": 8,
+      "title": "Backup and Disaster Recovery",
+      "description": "Ensure your server and data can be restored if something goes wrong.\n\n1. Write a backup script that archives your application directory and database (if any)\n2. Schedule the backup with a cron job (e.g., daily at 2 AM)\n3. Configure the script to upload backups to a remote location (e.g., S3, Backblaze B2, or another server via rsync)\n4. Retain only the last 7 daily backups to save space\n5. Test a full restore: spin up a new server, restore from backup, and verify the app runs\n6. Document your disaster recovery procedure",
+      "checkpoints": [
+        "Backup script exists and runs without errors",
+        "Cron job is scheduled for daily backups",
+        "Backups are uploaded to a remote/off-server location",
+        "Old backups are cleaned up automatically",
+        "Full restore tested successfully on a fresh server",
+        "Disaster recovery steps are documented"
+      ]
+    }
+  ]
+}

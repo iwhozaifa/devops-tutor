@@ -1,0 +1,130 @@
+{
+  "dayNumber": 14,
+  "title": "GitHub Actions - CD & Automation",
+  "summary": "Extend your CI pipeline into Continuous Deployment and automation. Learn to deploy applications, manage secrets, use environments, create reusable workflows, and automate common tasks like releases and notifications.",
+  "resources": [
+    {
+      "title": "GitHub Actions - Deploying with GitHub Actions",
+      "url": "https://docs.github.com/en/actions/deployment/about-deployments/deploying-with-github-actions",
+      "type": "DOCS",
+      "source": "GitHub",
+      "duration": "30 min",
+      "isRequired": true,
+      "sortOrder": 1
+    },
+    {
+      "title": "GitHub Actions - Using Secrets",
+      "url": "https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions",
+      "type": "DOCS",
+      "source": "GitHub",
+      "duration": "20 min",
+      "isRequired": true,
+      "sortOrder": 2
+    },
+    {
+      "title": "GitHub Actions - Environments",
+      "url": "https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment",
+      "type": "DOCS",
+      "source": "GitHub",
+      "duration": "20 min",
+      "isRequired": false,
+      "sortOrder": 3
+    },
+    {
+      "title": "GitHub Actions CI/CD Pipeline - Full Tutorial",
+      "url": "https://www.youtube.com/watch?v=R8_veQiYBjI",
+      "type": "VIDEO",
+      "source": "YouTube (TechWorld with Nana)",
+      "duration": "1h (CD section)",
+      "isRequired": false,
+      "sortOrder": 4
+    },
+    {
+      "title": "Awesome GitHub Actions - Curated List",
+      "url": "https://github.com/sdras/awesome-actions",
+      "type": "REPO",
+      "source": "GitHub",
+      "duration": "Reference",
+      "isRequired": false,
+      "sortOrder": 5
+    }
+  ],
+  "quiz": {
+    "title": "Day 14 Quiz: GitHub Actions CD & Automation",
+    "passingScore": 70,
+    "questions": [
+      {
+        "questionText": "How do you store sensitive values like API keys in GitHub Actions?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "GitHub Secrets (Settings > Secrets and variables > Actions) store encrypted values that can be accessed in workflows using ${{ secrets.SECRET_NAME }}. They are never exposed in logs.",
+        "options": [
+          {"id": "a", "text": "Hardcode them in the workflow YAML file", "isCorrect": false},
+          {"id": "b", "text": "Store them in a .env file in the repository", "isCorrect": false},
+          {"id": "c", "text": "Use GitHub Secrets and reference them with ${{ secrets.NAME }}", "isCorrect": true},
+          {"id": "d", "text": "Pass them as workflow dispatch inputs", "isCorrect": false}
+        ],
+        "sortOrder": 1
+      },
+      {
+        "questionText": "What are GitHub Environments used for?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "Environments (like staging, production) allow you to set environment-specific secrets, configure protection rules (approvals, wait timers), and track deployment history.",
+        "options": [
+          {"id": "a", "text": "Setting up different operating systems for runners", "isCorrect": false},
+          {"id": "b", "text": "Configuring deployment targets with protection rules and environment-specific secrets", "isCorrect": true},
+          {"id": "c", "text": "Creating isolated Docker containers", "isCorrect": false},
+          {"id": "d", "text": "Managing Git branches", "isCorrect": false}
+        ],
+        "sortOrder": 2
+      },
+      {
+        "questionText": "What does 'workflow_dispatch' trigger allow?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "The 'workflow_dispatch' trigger enables manual execution of a workflow from the GitHub Actions UI. You can also define input parameters that the user provides when triggering.",
+        "options": [
+          {"id": "a", "text": "Automatic triggering on a schedule", "isCorrect": false},
+          {"id": "b", "text": "Manual triggering of a workflow from the GitHub UI", "isCorrect": true},
+          {"id": "c", "text": "Triggering when a workflow in another repo completes", "isCorrect": false},
+          {"id": "d", "text": "Triggering when a Docker image is pushed", "isCorrect": false}
+        ],
+        "sortOrder": 3
+      },
+      {
+        "questionText": "How can you reuse workflow logic across multiple repositories?",
+        "questionType": "SINGLE_CHOICE",
+        "explanation": "Reusable workflows and composite actions let you define workflow logic once and call it from multiple workflows. Reusable workflows use 'workflow_call' trigger and are referenced with 'uses: org/repo/.github/workflows/file.yml@ref'.",
+        "options": [
+          {"id": "a", "text": "Copy and paste the YAML files", "isCorrect": false},
+          {"id": "b", "text": "Use reusable workflows or composite actions", "isCorrect": true},
+          {"id": "c", "text": "Create a Git submodule for workflows", "isCorrect": false},
+          {"id": "d", "text": "You cannot share workflows across repos", "isCorrect": false}
+        ],
+        "sortOrder": 4
+      }
+    ]
+  },
+  "tasks": [
+    {
+      "title": "Create a CD Deployment Workflow",
+      "description": "1. Create a deployment workflow `.github/workflows/deploy.yml`:\n   ```yaml\n   name: Deploy\n   on:\n     push:\n       branches: [main]\n     workflow_dispatch:\n   jobs:\n     build:\n       runs-on: ubuntu-latest\n       steps:\n         - uses: actions/checkout@v4\n         - name: Build\n           run: echo 'Building application...'\n         - name: Upload artifact\n           uses: actions/upload-artifact@v4\n           with:\n             name: build-output\n             path: .\n     deploy-staging:\n       needs: build\n       runs-on: ubuntu-latest\n       environment: staging\n       steps:\n         - name: Download artifact\n           uses: actions/download-artifact@v4\n           with:\n             name: build-output\n         - name: Deploy to staging\n           run: echo 'Deploying to staging...'\n     deploy-production:\n       needs: deploy-staging\n       runs-on: ubuntu-latest\n       environment: production\n       steps:\n         - name: Download artifact\n           uses: actions/download-artifact@v4\n           with:\n             name: build-output\n         - name: Deploy to production\n           run: echo 'Deploying to production...'\n   ```\n2. Push and observe the pipeline in the Actions tab\n3. Set up environments in your repo settings (Settings > Environments)\n4. Add a protection rule requiring approval for production",
+      "difficulty": "INTERMEDIATE",
+      "xpReward": 60,
+      "hints": [
+        "Create environments via Settings > Environments > New environment",
+        "Add required reviewers as a protection rule for the production environment"
+      ],
+      "sortOrder": 1
+    },
+    {
+      "title": "Automate Releases with GitHub Actions",
+      "description": "1. Create a release workflow `.github/workflows/release.yml`:\n   ```yaml\n   name: Release\n   on:\n     push:\n       tags:\n         - 'v*'\n   jobs:\n     release:\n       runs-on: ubuntu-latest\n       permissions:\n         contents: write\n       steps:\n         - uses: actions/checkout@v4\n         - name: Create Release\n           uses: softprops/action-gh-release@v2\n           with:\n             generate_release_notes: true\n   ```\n2. Tag a release: `git tag v1.0.0 && git push origin v1.0.0`\n3. Watch the workflow create a GitHub release automatically\n4. Add a scheduled workflow that runs daily:\n   ```yaml\n   on:\n     schedule:\n       - cron: '0 9 * * 1-5'  # 9 AM UTC, Mon-Fri\n   ```\n5. Explore the GitHub Actions Marketplace for useful actions\n6. Create a matrix strategy to test across multiple OS versions:\n   ```yaml\n   strategy:\n     matrix:\n       os: [ubuntu-latest, macos-latest]\n   runs-on: ${{ matrix.os }}\n   ```",
+      "difficulty": "INTERMEDIATE",
+      "xpReward": 70,
+      "hints": [
+        "Semantic versioning (v1.0.0) is the standard: major.minor.patch",
+        "The 'permissions' key scopes the GITHUB_TOKEN — 'contents: write' is needed to create releases"
+      ],
+      "sortOrder": 2
+    }
+  ]
+}
