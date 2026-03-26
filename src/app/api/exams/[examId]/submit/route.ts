@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import {
+  awardExamPassXp,
+  processGamificationEvent,
+} from "@/lib/gamification";
 
 interface AnswerPayload {
   questionId: string;
@@ -87,5 +91,13 @@ export async function POST(
     },
   });
 
-  return NextResponse.json({ score, passed, timeSpent, results });
+  // Gamification: award XP and evaluate badges if passed
+  let gamification = null;
+  if (passed) {
+    const xpAwarded = await awardExamPassXp(session.user.id, examId);
+    const result = await processGamificationEvent(session.user.id);
+    gamification = { xpAwarded, ...result };
+  }
+
+  return NextResponse.json({ score, passed, timeSpent, results, gamification });
 }

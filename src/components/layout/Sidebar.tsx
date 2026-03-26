@@ -8,7 +8,10 @@ import {
   User,
   LogOut,
   Terminal,
+  Trophy,
 } from "lucide-react";
+import { XpBar } from "@/components/gamification/XpBar";
+import { StreakCounter } from "@/components/gamification/StreakCounter";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
@@ -17,15 +20,24 @@ import { logoutUser } from "@/lib/auth-actions";
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/subjects", label: "Subjects", icon: BookOpen },
+  { href: "/leaderboard", label: "Leaderboard", icon: Trophy },
   { href: "/profile", label: "Profile", icon: User },
 ];
 
 interface SidebarProps {
   userName: string | null | undefined;
   userEmail: string | null | undefined;
+  xp?: {
+    level: number;
+    current: number;
+    required: number;
+    percentage: number;
+    totalXp: number;
+  };
+  streak?: number;
 }
 
-export function Sidebar({ userName, userEmail }: SidebarProps) {
+export function Sidebar({ userName, userEmail, xp, streak }: SidebarProps) {
   const pathname = usePathname();
 
   return (
@@ -57,6 +69,20 @@ export function Sidebar({ userName, userEmail }: SidebarProps) {
           );
         })}
       </nav>
+
+      {/* Gamification */}
+      {xp && (
+        <div className="border-t px-4 py-3 space-y-2">
+          <XpBar
+            level={xp.level}
+            current={xp.current}
+            required={xp.required}
+            percentage={xp.percentage}
+            totalXp={xp.totalXp}
+          />
+          {streak !== undefined && <StreakCounter currentStreak={streak} />}
+        </div>
+      )}
 
       {/* Theme + User info + logout */}
       <div className="border-t p-3">

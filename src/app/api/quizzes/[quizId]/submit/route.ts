@@ -89,5 +89,18 @@ export async function POST(
     },
   });
 
-  return NextResponse.json({ score, passed, results });
+  // Gamification: award XP and evaluate badges if passed
+  let gamification = null;
+  if (passed) {
+    const xpAwarded = await awardQuizPassXp(
+      session.user.id,
+      quizId,
+      score,
+      quiz.passingScore
+    );
+    const result = await processGamificationEvent(session.user.id);
+    gamification = { xpAwarded, ...result };
+  }
+
+  return NextResponse.json({ score, passed, results, gamification });
 }

@@ -9,9 +9,14 @@ import {
   CheckCircle,
   Clock,
   Timer,
+  Award,
 } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { xpProgress } from "@/lib/gamification";
+import { XpBar } from "@/components/gamification/XpBar";
+import { BadgeDisplay } from "@/components/gamification/BadgeDisplay";
+import { StreakCounter } from "@/components/gamification/StreakCounter";
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -22,36 +27,63 @@ export default async function ProfilePage() {
 
   const userId = session.user.id;
 
-  const [user, xpEntries, streak, dayProgressCount, quizAttempts, examAttempts] =
-    await Promise.all([
-      db.user.findUnique({ where: { id: userId } }),
-      db.xpLedger.aggregate({
-        where: { userId },
-        _sum: { amount: true },
-      }),
-      db.streak.findUnique({ where: { userId } }),
-      db.dayProgress.count({
-        where: { userId, status: "COMPLETED" },
-      }),
-      db.quizAttempt.findMany({
-        where: { userId },
-        orderBy: { completedAt: "desc" },
-        take: 10,
-        include: { quiz: { select: { title: true } } },
-      }),
-      db.examAttempt.findMany({
-        where: { userId },
-        orderBy: { completedAt: "desc" },
-        take: 10,
-        include: { exam: { select: { title: true } } },
-      }),
-    ]);
+  const [
+    user,
+    xpEntries,
+    streak,
+    dayProgressCount,
+    quizAttempts,
+    examAttempts,
+    allBadges,
+    userBadges,
+  ] = await Promise.all([
+    db.user.findUnique({ where: { id: userId } }),
+    db.xpLedger.aggregate({
+      where: { userId },
+      _sum: { amount: true },
+    }),
+    db.streak.findUnique({ where: { userId } }),
+    db.dayProgress.count({
+      where: { userId, status: "COMPLETED" },
+    }),
+    db.quizAttempt.findMany({
+      where: { userId },
+      orderBy: { completedAt: "desc" },
+      take: 10,
+      include: { quiz: { select: { title: true } } },
+    }),
+    db.examAttempt.findMany({
+      where: { userId },
+      orderBy: { completedAt: "desc" },
+      take: 10,
+      include: { exam: { select: { title: true } } },
+    }),
+    db.badge.findMany(),
+    db.userBadge.findMany({
+      where: { userId },
+      select: { badgeId: true, earnedAt: true },
+    }),
+  ]);
 
   if (!user) redirect("/login");
 
   const totalXp = xpEntries._sum.amount ?? 0;
-  const level = Math.floor(totalXp / 500) + 1;
+  const progress = xpProgress(totalXp);
   const currentStreak = streak?.currentStreak ?? 0;
+
+  const earnedMap = new Map(
+    userBadges.map((ub) => [ub.badgeId, ub.earnedAt])
+  );
+  const badgesForDisplay = allBadges.map((b) => ({
+    id: b.id,
+    slug: b.slug,
+    title: b.title,
+    description: b.description,
+    icon: b.icon,
+    category: b.category,
+    earned: earnedMap.has(b.id),
+    earnedAt: earnedMap.get(b.id)?.toISOString() ?? null,
+  }));
 
   function formatTime(seconds: number) {
     const m = Math.floor(seconds / 60);
@@ -105,7 +137,7 @@ export default async function ProfilePage() {
             <Trophy className="h-4 w-4" />
             <span className="text-xs font-medium">Level</span>
           </div>
-          <p className="mt-2 text-2xl font-bold">{level}</p>
+          <p className="mt-2 text-2xl font-bold">{progress.level}</p>
         </div>
         <div className="rounded-lg border bg-card p-4 shadow-sm">
           <div className="flex items-center gap-2 text-muted-foreground">
@@ -124,6 +156,52 @@ export default async function ProfilePage() {
           <p className="mt-2 text-2xl font-bold">{dayProgressCount}</p>
         </div>
       </div>
+
+      {/* XP Progress */}
+      <section className="rounded-lg border bg-card p-6 shadow-sm">
+        <h2 className="mb-4 text-lg font-semibold">Level Progress</h2>
+        <XpBar
+          level={progress.level}
+          current={progress.current}
+          required={progress.required}
+          percentage={progress.percentage}
+          totalXp={totalXp}
+        />
+      </section>
+
+      {/* Streak */}
+      <section className="rounded-lg border bg-card p-6 shadow-sm">
+        <h2 className="mb-3 text-lg font-semibold">Streak</h2>
+        <div className="flex items-center gap-6">
+          <StreakCounter currentStreak={currentStreak} />
+          <div className="text-sm text-muted-foreground">
+            Longest streak:{" "}
+            <span className="font-semibold text-foreground">
+              {streak?.longestStreak ?? 0} days
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* Badge Collection */}
+      <section className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Award className="h-5 w-5 text-yellow-500" />
+          <h2 className="text-lg font-semibold">Badge Collection</h2>
+          <span className="text-sm text-muted-foreground">
+            ({userBadges.length}/{allBadges.length} earned)
+          </span>
+        </div>
+        <div className="rounded-lg border bg-card p-6 shadow-sm">
+          {allBadges.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No badges available yet.
+            </p>
+          ) : (
+            <BadgeDisplay badges={badgesForDisplay} />
+          )}
+        </div>
+      </section>
 
       {/* Quiz Attempts */}
       <section className="space-y-3">
