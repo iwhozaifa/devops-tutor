@@ -19,7 +19,9 @@ A structured, gamified learning platform that guides you through DevOps concepts
 - **Gamification** -- earn XP, level up, collect badges, maintain streaks, and climb the leaderboard
 - **Dark / light theme** -- toggle between themes with `next-themes`
 - **Multi-subject architecture** -- add new subjects entirely via JSON seed files, no code changes required
-- **Admin panel with analytics** -- track learner progress, engagement, and content coverage
+- **Admin panel with analytics** -- track learner progress, engagement, and content coverage, with an audit log of admin actions
+- **Accounts** -- email verification, password reset, data export and self-service account deletion
+- **Production-ready on AWS** -- Terraform for EC2, RDS, ALB, WAF, SES and CloudWatch alarms; CI/CD with GitHub Actions; a monthly automated backup-restore drill
 
 ---
 
@@ -67,6 +69,22 @@ npm run admin:promote -- you@example.com
 ```
 
 Before pushing, run the same checks CI runs: `npm run lint && npm run typecheck && npm test`.
+
+### Tests
+
+| Suite | Command | Needs |
+| --- | --- | --- |
+| Unit | `npm test` | nothing |
+| Integration (route handlers and server actions on a real Postgres) | `TEST_DATABASE_URL=… npm run test:integration` | a disposable database; every test truncates it |
+| Coverage floor (unit + integration) | `TEST_DATABASE_URL=… npm run test:coverage` | same |
+| E2E (Playwright, against the production build) | `npm run build && E2E_DATABASE_URL=… npm run test:e2e` | a disposable database; Chromium (`npx playwright install chromium`, or `PW_CHROMIUM_PATH`) |
+| Infrastructure (offline, mocked providers) | `cd infra/terraform && terraform init -backend=false && terraform test` | Terraform 1.9+ |
+
+`npx prisma dev -d` prints a disposable local Postgres URL that works for both database suites.
+
+### Contributing workflow
+
+Changes reach `main` only through pull requests that pass the required checks: lint, typecheck, unit, integration, E2E, build, Docker build, and **Tests required**, which fails a PR that changes application code without changing a test. PRs are squash-merged and must be up to date with `main`. Write the failing test first, commit it, then make it pass.
 
 The server validates its environment at startup (`src/lib/env.ts`). If something is missing or still the placeholder, it exits with a message naming the variable.
 
@@ -187,7 +205,7 @@ Contributions are welcome! To get started:
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/my-feature`)
-3. Make your changes and ensure `npm run lint`, `npm run typecheck` and `npm test` pass
+3. Write a failing test, then the change that makes it pass; ensure the test suites above pass
 4. Commit with a clear message describing the change
 5. Push to your fork and open a Pull Request
 
