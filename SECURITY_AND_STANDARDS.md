@@ -6,7 +6,7 @@
 - **bcrypt hashing** with cost factor 12 — passwords are never stored in plain text
 - Password length 8–72 bytes enforced at registration (bcrypt ignores bytes past 72)
 - Emails are trimmed, lowercased and matched case-insensitively
-- Login attempts are rate limited per IP and per email inside the `authorize` callback (also covers `/api/auth/callback/credentials`); registration is rate limited per IP. The limiter is in-memory, so multi-instance deployments should add proxy-level limits too
+- Login attempts are rate limited per IP and per email inside the `authorize` callback (also covers `/api/auth/callback/credentials`); registration is rate limited per IP. The client IP is the last `TRUSTED_PROXY_HOPS` entry of `X-Forwarded-For` (the address the ALB appended), never the client-controlled leftmost entry, so the per-IP limit cannot be bypassed by sending a fake header. The limiter is in-memory and per process; move it to Postgres or Redis before running more than one instance
 - Credentials validated server-side via Auth.js `authorize` callback — no client-side password comparison
 
 ### Session Management
@@ -59,7 +59,7 @@
 - React's JSX auto-escapes all rendered content by default
 - No `dangerouslySetInnerHTML` usage
 - External resource URLs are rendered as `href` attributes on anchor tags, not injected as HTML
-- Content Security Policy, HSTS and related headers are set in `next.config.ts`
+- Content Security Policy, HSTS (production only) and related headers are set in `next.config.ts`; the `X-Powered-By` header is disabled
 - `next/image` remote optimization is disabled (no remote patterns), so the server cannot be used as an open image proxy
 
 ---
@@ -92,12 +92,15 @@
 - `AUTH_SECRET` must be set for JWT signing
 - Database credentials isolated in `DATABASE_URL`
 - OAuth client secrets stored in environment variables only
+- The environment is validated at server start (`src/lib/env.ts`, called from `src/instrumentation.ts`). A missing or placeholder `AUTH_SECRET`, a malformed `DATABASE_URL`, or a missing `AUTH_URL` in production stops the server with a readable error
+- In production, secrets live in SSM Parameter Store and are written to a mode-600 env file on the host at deploy time; they are never baked into the image (`.dockerignore` excludes `.env*`)
 
 ### Production Recommendations
 - Generate `AUTH_SECRET` with `openssl rand -base64 32`
-- Use managed PostgreSQL (Neon, Supabase, RDS) with SSL connections
-- Enable `AUTH_TRUST_HOST=false` and set explicit `NEXTAUTH_URL` in production
-- Add proxy-level rate limiting (nginx, Cloudflare) in addition to the in-app login limiter
+- RDS connections use `sslmode=verify-full` against the RDS CA bundle baked into the image (see `docs/DEPLOYMENT.md`)
+- Set `AUTH_URL` to the public https origin; `AUTH_TRUST_HOST=true` is required behind the ALB
+- Only the ALB security group may reach the app port, since the app trusts the last `X-Forwarded-For` hop
+- Consider AWS WAF on the ALB (rate-based rules, managed bot rules) in addition to the in-app login limiter
 - The bundled `docker-compose.yml` uses default Postgres credentials and binds to 127.0.0.1 — for local development only
 - Add CORS headers if API is consumed by external clients
 
@@ -161,14 +164,21 @@
 - No client-side secret storage
 - External links use `target="_blank"` with implicit `rel="noopener"` (React default)
 - Form submissions use server actions — CSRF protection built into Next.js
+- The production image runs as a non-root user with a read-only root filesystem and `no-new-privileges`
+- Dependabot opens weekly update PRs for npm, GitHub Actions and the Docker base image; CI fails on critical `npm audit` findings
+
+### Known audit findings (accepted)
+The remaining `npm audit` findings are all in build-time tooling and do not ship in the runtime image (the standalone output only contains traced runtime files):
+- `prisma` CLI → `mysql2`, `deepmerge-ts`: the CLI bundles drivers for every database; this app only uses PostgreSQL and the CLI only reads trusted config. No fixed Prisma 7 release yet
+- `eslint-config-next` → `fast-glob` → `micromatch` → `braces`: lint-time only, operating on the repository's own file globs
 
 ---
 
 ## Testing Recommendations (for production readiness)
 
-- [ ] Unit tests for gamification logic (XP calculations, badge evaluation, streak management)
+- [x] Unit tests for gamification, grading, validation, rate limiting and env parsing (`npm test`)
 - [ ] Integration tests for API routes (quiz/exam submission, progress tracking)
 - [ ] E2E tests for critical flows (register, enroll, complete day, take quiz)
 - [ ] Load testing for leaderboard queries (aggregation performance)
-- [ ] Security audit: rate limiting, CORS, CSP headers
+- [x] Security audit: rate limiting, CSP headers, X-Forwarded-For handling
 - [ ] Accessibility audit (keyboard navigation, screen readers, ARIA labels)
