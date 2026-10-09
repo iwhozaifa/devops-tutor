@@ -4,6 +4,8 @@ import { Trophy, Clock } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { QuizPlayer } from "@/components/quiz/QuizPlayer";
+import { EnrollPrompt } from "@/components/EnrollPrompt";
+import { isEnrolled } from "@/lib/enrollment";
 
 interface QuizPageProps {
   params: Promise<{ subjectSlug: string; quizId: string }>;
@@ -106,11 +108,15 @@ export default async function QuizPage({ params }: QuizPageProps) {
       </div>
 
       {/* Quiz Player */}
-      <QuizPlayer
-        quiz={quizData}
-        subjectSlug={subjectSlug}
-        dayNumber={day.dayNumber}
-      />
+      {(await isEnrolled(session.user.id, subject.id)) ? (
+        <QuizPlayer
+          quiz={quizData}
+          subjectSlug={subjectSlug}
+          dayNumber={day.dayNumber}
+        />
+      ) : (
+        <EnrollPrompt subjectId={subject.id} subjectSlug={subjectSlug} />
+      )}
 
       {/* Previous attempts */}
       {previousAttempts.length > 0 && (
