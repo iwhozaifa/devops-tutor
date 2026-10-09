@@ -7,12 +7,14 @@ import {
   BarChart3,
   Shield,
   Terminal,
+  ScrollText,
 } from "lucide-react";
 
 const adminNav = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/admin/audit", label: "Audit log", icon: ScrollText },
 ];
 
 export default async function AdminLayout({
