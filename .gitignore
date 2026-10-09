@@ -48,3 +48,6 @@ next-env.d.ts
 /test-results/
 /playwright-report/
 /blob-report/
+
+# local email outbox (MAIL_TRANSPORT=file)
+/.mail-outbox/

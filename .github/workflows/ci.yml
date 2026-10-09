@@ -69,6 +69,7 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/devtutor
       AUTH_SECRET: ci-only-secret-not-used-anywhere-else-0123456789
       AUTH_URL: http://localhost:3000
+      MAIL_TRANSPORT: file
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
