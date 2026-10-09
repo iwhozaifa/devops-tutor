@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { isEnrolled, notEnrolled } from "@/lib/enrollment";
 import { awardXp } from "@/lib/gamification";
 import { parseBody, projectProgressSchema } from "@/lib/validation";
 
@@ -24,8 +25,12 @@ export async function POST(
   const project = await db.project.findFirst({
     where: { id: projectId, subject: { isPublished: true } },
   });
-  if (!project) {
+  // A published subject is required above, so subjectId is set
+  if (!project || !project.subjectId) {
     return NextResponse.json({ error: "Project not found" }, { status: 404 });
+  }
+  if (!(await isEnrolled(userId, project.subjectId))) {
+    return notEnrolled();
   }
 
   const steps = project.steps as Array<{

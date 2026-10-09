@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { login, PASSWORD, register, uniqueEmail } from "./helpers";
 
 test("register lands on the dashboard and the session survives a reload", async ({ page }) => {

@@ -25,17 +25,19 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts      Account[]
-  sessions      Session[]
-  enrollments   Enrollment[]
-  dayProgress   DayProgress[]
-  quizAttempts  QuizAttempt[]
-  examAttempts  ExamAttempt[]
+  accounts        Account[]
+  sessions        Session[]
+  enrollments     Enrollment[]
+  dayProgress     DayProgress[]
+  quizAttempts    QuizAttempt[]
+  examAttempts    ExamAttempt[]
   taskSubmissions TaskSubmission[]
   projectProgress ProjectProgress[]
-  xpLedger      XpLedger[]
-  badges        UserBadge[]
-  streak        Streak?
+  xpLedger        XpLedger[]
+  badges          UserBadge[]
+  streak          Streak?
+  auditActions    AdminAuditLog[]   @relation("AuditActor")
+  auditTargets    AdminAuditLog[]   @relation("AuditTarget")
 }
 
 model Account {
@@ -118,7 +120,7 @@ model Day {
   sortOrder Int
   createdAt DateTime @default(now())
 
-  module    Module       @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  module    Module        @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   resources Resource[]
   quizzes   Quiz[]
   tasks     DailyTask[]
@@ -139,16 +141,16 @@ enum ResourceType {
 }
 
 model Resource {
-  id        String       @id @default(cuid())
-  dayId     String
-  title     String
-  url       String
-  type      ResourceType
-  source    String?
-  duration  String?
-  isRequired Boolean     @default(true)
-  sortOrder Int
-  createdAt DateTime     @default(now())
+  id         String       @id @default(cuid())
+  dayId      String
+  title      String
+  url        String
+  type       ResourceType
+  source     String?
+  duration   String?
+  isRequired Boolean      @default(true)
+  sortOrder  Int
+  createdAt  DateTime     @default(now())
 
   day Day @relation(fields: [dayId], references: [id], onDelete: Cascade)
 }
@@ -457,4 +459,30 @@ model RateLimitBucket {
   resetAt DateTime
 
   @@index([resetAt])
+}
+
+enum AdminAction {
+  ROLE_GRANTED
+  ROLE_REVOKED
+  USER_LIST_VIEWED
+}
+
+// Who did what to whom in the admin panel or the admin CLI. Labels keep the
+// entry readable after an account is deleted (the foreign keys go to NULL).
+model AdminAuditLog {
+  id           String      @id @default(cuid())
+  createdAt    DateTime    @default(now())
+  action       AdminAction
+  actorId      String?
+  actorLabel   String
+  targetUserId String?
+  targetLabel  String?
+  metadata     Json?
+
+  actor  User? @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  target User? @relation("AuditTarget", fields: [targetUserId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([actorId])
+  @@index([targetUserId])
 }

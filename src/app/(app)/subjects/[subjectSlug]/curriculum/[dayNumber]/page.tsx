@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { ResourceList } from "@/components/curriculum/ResourceList";
 import { DayCompleteButton } from "@/components/curriculum/DayCompleteButton";
 import { TaskCard } from "@/components/curriculum/TaskCard";
+import { EnrollPrompt } from "@/components/EnrollPrompt";
+import { isEnrolled } from "@/lib/enrollment";
 
 interface DayPageProps {
   params: Promise<{ subjectSlug: string; dayNumber: string }>;
@@ -35,6 +37,7 @@ export default async function DayPage({ params }: DayPageProps) {
   });
 
   if (!subject) notFound();
+  const enrolled = userId ? await isEnrolled(userId, subject.id) : false;
 
   // Flatten all days to find current, prev, next
   const allDays = subject.modules.flatMap((m) =>
@@ -154,6 +157,7 @@ export default async function DayPage({ params }: DayPageProps) {
             {day.tasks.map((task) => (
               <TaskCard
                 key={task.id}
+                canSubmit={enrolled}
                 task={{
                   id: task.id,
                   title: task.title,
@@ -180,11 +184,12 @@ export default async function DayPage({ params }: DayPageProps) {
       )}
 
       {/* Mark Complete */}
-      {userId && (
+      {userId && enrolled && (
         <div className="rounded-lg border bg-card p-5">
           <DayCompleteButton dayId={day.id} isCompleted={isCompleted} />
         </div>
       )}
+      {userId && !enrolled && <EnrollPrompt subjectId={subject.id} subjectSlug={subjectSlug} />}
 
       {/* Navigation */}
       <div className="flex items-center justify-between border-t pt-6">

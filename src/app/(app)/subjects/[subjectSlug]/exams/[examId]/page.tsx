@@ -4,6 +4,8 @@ import { Trophy, Clock, Timer } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { ExamPlayer } from "@/components/exam/ExamPlayer";
+import { EnrollPrompt } from "@/components/EnrollPrompt";
+import { isEnrolled } from "@/lib/enrollment";
 
 interface ExamPageProps {
   params: Promise<{ subjectSlug: string; examId: string }>;
@@ -92,7 +94,11 @@ export default async function ExamPage({ params }: ExamPageProps) {
       </div>
 
       {/* Exam Player */}
-      <ExamPlayer exam={examData} subjectSlug={subjectSlug} />
+      {(await isEnrolled(session.user.id, exam.certification.subject.id)) ? (
+        <ExamPlayer exam={examData} subjectSlug={subjectSlug} />
+      ) : (
+        <EnrollPrompt subjectId={exam.certification.subject.id} subjectSlug={subjectSlug} />
+      )}
 
       {/* Previous attempts */}
       {previousAttempts.length > 0 && (
