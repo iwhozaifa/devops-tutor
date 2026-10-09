@@ -1,5 +1,5 @@
 import { expect, test } from "./fixtures";
-import { register } from "./helpers";
+import { enrollVia, register } from "./helpers";
 
 // Pages render with a per-request nonce; any inline script without it would
 // be blocked and reported as a console error.
@@ -17,7 +17,7 @@ test("pages load with a nonce-based CSP and no violations", async ({ page }) => 
   await page.goto("/login");
   await register(page);
   await page.goto("/subjects");
-  await page.getByRole("button", { name: "Enroll" }).first().click();
+  await enrollVia(page, page.getByRole("button", { name: "Enroll" }).first());
   await page.goto("/subjects/devops/curriculum/1");
   await page.getByRole("link", { name: /quiz/i }).first().click();
   await page.goto("/subjects/devops/exams");
