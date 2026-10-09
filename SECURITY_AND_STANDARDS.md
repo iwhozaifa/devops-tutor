@@ -8,12 +8,15 @@
 - Emails are trimmed, lowercased and matched case-insensitively
 - Login attempts are rate limited per IP and per email inside the `authorize` callback (also covers `/api/auth/callback/credentials`); registration is rate limited per IP. The client IP is the last `TRUSTED_PROXY_HOPS` entry of `X-Forwarded-For` (the address the ALB appended), never the client-controlled leftmost entry, so the per-IP limit cannot be bypassed by sending a fake header. Counters live in a Postgres `UNLOGGED` table updated with one atomic upsert per attempt, so limits hold across every app instance (`src/lib/rate-limit.ts`)
 - Credentials validated server-side via Auth.js `authorize` callback — no client-side password comparison
+- **Password reset** (`/forgot-password`) answers identically whether or not an account exists, is rate limited per IP and per email, and uses a 1-hour single-use link. The reset page only checks the link; it is used up on submit, so email scanners cannot burn it
+- **Email links** (verification, reset) carry 32 random bytes; only their SHA-256 hash is stored (`EmailToken`), a new link revokes older ones, and use is atomic
 
 ### Session Management
 - **JWT-based sessions** via Auth.js v5 — stateless, no session fixation risk
 - Session tokens are HTTP-only, secure cookies (set automatically by Auth.js)
 - `AUTH_SECRET` environment variable required — used to sign/encrypt JWTs
 - Session expiry handled by Auth.js defaults (30-day idle timeout)
+- **Revocation:** each JWT carries `User.tokenVersion`. A password reset bumps it, and the `jwt` callback rechecks it at most every 5 minutes (`src/lib/session.ts`), ending older sessions and sessions of deleted accounts
 
 ### OAuth Support
 - GitHub OAuth provider configured (optional) — delegates identity verification to trusted providers
@@ -44,10 +47,16 @@
 - Users can only read/write their own progress, submissions, and enrollments
 - Unique constraints (`@@unique([userId, subjectId])`, `@@unique([userId, dayId])`, etc.) enforce one-record-per-user at the database level
 - Content and XP are only available for published subjects (`isPublished`)
+- Progress and XP require an enrollment in the subject (403 otherwise)
+
+### Personal data
+- Learners can download all their data (`/api/account/export`) and delete their account from the profile page (password or typed-email confirmation, rate limited); deletion cascades all learner data
+- `/privacy` and `/terms` describe what is stored; operator details come from `LEGAL_OPERATOR_NAME` and `LEGAL_CONTACT_EMAIL`. Have both reviewed before launch
 
 ### Admin Access
 - Admin is a database role (`User.role`), not an email allowlist — emails are unverified, so matching on them would let anyone register an admin address
-- Promote/demote with `npm run admin:promote -- <email> [--demote]`
+- Promote/demote with `npm run admin:promote -- <email> [--demote] [--by <operator>]`
+- Role changes and admin views of learner data are recorded in `AdminAuditLog` (`/admin/audit`); entries survive account deletion with the email replaced by "deleted user"
 - `requireAdmin()` (`src/lib/admin.ts`) is called in the admin layout **and** every admin page, and reads the role from the database so demotion is immediate
 
 ### SQL Injection Prevention
@@ -139,7 +148,8 @@
 
 ### Version Control
 - Conventional commit messages (`feat:`, `fix:`, etc.)
-- Commits organized by feature phase — clean, reviewable history
+- `main` is protected: changes land through squash-merged pull requests that are up to date with `main` and pass every required check, including a gate that rejects code changes without test changes
+- Test-first: each feature PR's history shows the failing tests before the implementation
 - `.gitignore` properly configured for Next.js, Node, Prisma, and env files
 - No secrets, credentials, or generated files in version control
 
@@ -178,8 +188,10 @@ The remaining `npm audit` findings are all in build-time tooling and do not ship
 ## Testing Recommendations (for production readiness)
 
 - [x] Unit tests for gamification, grading, validation, rate limiting and env parsing (`npm test`)
-- [ ] Integration tests for API routes (quiz/exam submission, progress tracking)
-- [ ] E2E tests for critical flows (register, enroll, complete day, take quiz)
+- [x] Integration tests for API routes and server actions against Postgres (`npm run test:integration`)
+- [x] E2E tests for critical flows: registration, login, enrollment, learning, email verification, password reset, account deletion, admin audit, CSP (`npm run test:e2e`)
+- [x] Infrastructure tests for the Terraform stack (`terraform test`)
+- [x] Backup restore verified monthly (`.github/workflows/restore-drill.yml`)
 - [ ] Load testing for leaderboard queries (aggregation performance)
 - [x] Security audit: rate limiting, CSP headers, X-Forwarded-For handling
 - [ ] Accessibility audit (keyboard navigation, screen readers, ARIA labels)

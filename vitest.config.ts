@@ -13,7 +13,7 @@ export default defineConfig({
       exclude: ["src/lib/**/*.test.ts"],
       reporter: ["text-summary", "html", "json-summary"],
       // A floor, not a target: raise it as coverage grows, never lower it
-      thresholds: { lines: 68, statements: 66, functions: 65, branches: 52 },
+      thresholds: { lines: 82, statements: 80, functions: 82, branches: 70 },
     },
     projects: [
       {
