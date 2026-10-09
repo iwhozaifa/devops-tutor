@@ -2,7 +2,8 @@ import { CredentialsSignin } from "next-auth";
 import bcrypt from "bcryptjs";
 import { db } from "./db";
 import { env } from "./env";
-import { clientIpFrom, rateLimit } from "./rate-limit";
+import { clientIpFrom } from "./client-ip";
+import { rateLimit } from "./rate-limit";
 
 export class RateLimitedSignin extends CredentialsSignin {
   code = "rate_limited";
@@ -24,8 +25,8 @@ export async function authorizeCredentials(
   const email = String(credentials.email).trim().toLowerCase();
   const ip = clientIpFrom(headers, env().TRUSTED_PROXY_HOPS);
   if (
-    !rateLimit(`login:ip:${ip}`, 20, WINDOW_MS) ||
-    !rateLimit(`login:email:${email}`, 10, WINDOW_MS)
+    !(await rateLimit(`login:ip:${ip}`, 20, WINDOW_MS)) ||
+    !(await rateLimit(`login:email:${email}`, 10, WINDOW_MS))
   ) {
     throw new RateLimitedSignin();
   }
