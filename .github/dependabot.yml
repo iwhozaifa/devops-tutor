@@ -4,14 +4,31 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    open-pull-requests-limit: 5
     groups:
       minor-and-patch:
         update-types: [minor, patch]
+    ignore:
+      # Tracks the Node major in .nvmrc and the Docker base image
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # Toolchain majors need migration work; upgrade them deliberately
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+      - dependency-name: eslint
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
   - package-ecosystem: docker
     directory: /
     schedule:
       interval: weekly
+    ignore:
+      # The image's Node major follows .nvmrc
+      - dependency-name: node
+        update-types: ["version-update:semver-major"]
