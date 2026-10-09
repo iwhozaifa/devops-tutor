@@ -38,6 +38,7 @@ model User {
   streak          Streak?
   auditActions    AdminAuditLog[]   @relation("AuditActor")
   auditTargets    AdminAuditLog[]   @relation("AuditTarget")
+  emailTokens     EmailToken[]
 }
 
 model Account {
@@ -485,4 +486,25 @@ model AdminAuditLog {
   @@index([createdAt])
   @@index([actorId])
   @@index([targetUserId])
+}
+
+enum EmailTokenPurpose {
+  VERIFY_EMAIL
+  RESET_PASSWORD
+}
+
+// Single-use links sent by email. Only a SHA-256 hash of the token is
+// stored, so a database leak does not expose working links.
+model EmailToken {
+  id        String            @id @default(cuid())
+  userId    String
+  purpose   EmailTokenPurpose
+  tokenHash String            @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime          @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
 }
