@@ -1,6 +1,9 @@
+import type { Metadata } from "next";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/admin";
 import { Users, BookOpen, Activity, TrendingUp } from "lucide-react";
+
+export const metadata: Metadata = { title: "Admin" };
 
 export default async function AdminDashboardPage() {
   await requireAdmin();

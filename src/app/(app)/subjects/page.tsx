@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { EnrollButton } from "@/components/EnrollButton";
+
+export const metadata: Metadata = { title: "Subjects" };
 
 export default async function SubjectsPage() {
   const session = await auth();
