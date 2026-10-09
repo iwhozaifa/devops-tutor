@@ -59,7 +59,8 @@
 - React's JSX auto-escapes all rendered content by default
 - No `dangerouslySetInnerHTML` usage
 - External resource URLs are rendered as `href` attributes on anchor tags, not injected as HTML
-- Content Security Policy, HSTS (production only) and related headers are set in `next.config.ts`; the `X-Powered-By` header is disabled
+- Content Security Policy with a per-request nonce (`src/proxy.ts`, `src/lib/csp.ts`): scripts run only with the nonce plus `'strict-dynamic'`, never `'unsafe-inline'` or (in production) `'unsafe-eval'`, so injected inline scripts are blocked. Styles still allow inline styles, because React style attributes cannot carry a nonce
+- HSTS (production only) and the other security headers are set in `next.config.ts`; the `X-Powered-By` header is disabled
 - `next/image` remote optimization is disabled (no remote patterns), so the server cannot be used as an open image proxy
 
 ---
