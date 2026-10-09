@@ -50,3 +50,6 @@ mock_resource "aws_sns_topic" {
 mock_resource "aws_wafv2_web_acl" {
   defaults = { arn = "arn:aws:wafv2:eu-west-1:123456789012:regional/webacl/devops-tutor/a1b2c3d4-5678-90ab-cdef-EXAMPLE11111" }
 }
+mock_resource "aws_cloudwatch_metric_alarm" {
+  defaults = { arn = "arn:aws:cloudwatch:eu-west-1:123456789012:alarm:devops-tutor" }
+}
