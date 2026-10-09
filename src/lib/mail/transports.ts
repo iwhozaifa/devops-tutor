@@ -3,6 +3,9 @@ import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { SESv2Client, SendEmailCommand } from "@aws-sdk/client-sesv2";
 
+// Orders outbox files written within the same millisecond
+let fileSeq = 0;
+
 export interface MailMessage {
   to: string;
   subject: string;
@@ -52,7 +55,8 @@ export function createTransport(config: TransportConfig): MailTransport {
       return {
         async send(m) {
           mkdirSync(config.dir, { recursive: true });
-          const name = `${Date.now()}-${randomUUID()}.json`;
+          const seq = String(fileSeq++).padStart(8, "0");
+          const name = `${Date.now()}-${seq}-${randomUUID()}.json`;
           writeFileSync(
             path.join(config.dir, name),
             JSON.stringify({ from: config.from, ...m, sentAt: new Date().toISOString() }, null, 2)

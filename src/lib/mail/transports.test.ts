@@ -50,10 +50,20 @@ describe("mail transports", () => {
     await transport.send(message);
     await transport.send({ ...message, to: "other@example.test" });
 
-    const files = readdirSync(dir).sort();
-    expect(files).toHaveLength(2);
-    const first = JSON.parse(readFileSync(path.join(dir, files[0]), "utf8"));
-    expect(first).toMatchObject({ from: "a@example.test", ...message });
+    const mails = readdirSync(dir).map((f) => JSON.parse(readFileSync(path.join(dir, f), "utf8")));
+    expect(mails).toHaveLength(2);
+    expect(mails.find((m) => m.to === message.to)).toMatchObject({ from: "a@example.test", ...message });
+  });
+
+  it("file: names sort in the order messages were sent, even within one millisecond", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "outbox-"));
+    const transport = createTransport({ kind: "file", from: "a@example.test", dir });
+    for (let i = 0; i < 50; i++) await transport.send({ ...message, subject: `#${i}` });
+
+    const subjects = readdirSync(dir)
+      .sort()
+      .map((f) => JSON.parse(readFileSync(path.join(dir, f), "utf8")).subject);
+    expect(subjects).toEqual(Array.from({ length: 50 }, (_, i) => `#${i}`));
   });
 
   it("log: logs recipient and subject without throwing", async () => {
