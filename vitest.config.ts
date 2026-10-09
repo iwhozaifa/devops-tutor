@@ -30,7 +30,7 @@ export default defineConfig({
         extends: true,
         test: {
           name: "integration",
-          include: ["tests/integration/**/*.test.ts"],
+          include: ["tests/integration/**/*.test.{ts,tsx}"],
           globalSetup: ["tests/integration/global-setup.ts"],
           setupFiles: ["tests/integration/setup.ts"],
           env: {
