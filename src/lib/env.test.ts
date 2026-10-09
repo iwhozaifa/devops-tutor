@@ -24,7 +24,7 @@ describe("parseEnv", () => {
   it("requires AUTH_URL in production", () => {
     expect(() => parseEnv({ ...valid, NODE_ENV: "production" })).toThrow(/AUTH_URL/);
     expect(
-      parseEnv({ ...valid, NODE_ENV: "production", AUTH_URL: "https://example.com" }).AUTH_URL
+      parseEnv({ ...valid, NODE_ENV: "production", AUTH_URL: "https://example.com", MAIL_TRANSPORT: "file" }).AUTH_URL
     ).toBe("https://example.com");
   });
 
