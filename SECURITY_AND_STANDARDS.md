@@ -100,7 +100,7 @@
 - RDS connections use `sslmode=verify-full` against the RDS CA bundle baked into the image (see `docs/DEPLOYMENT.md`)
 - Set `AUTH_URL` to the public https origin; `AUTH_TRUST_HOST=true` is required behind the ALB
 - Only the ALB security group may reach the app port, since the app trusts the last `X-Forwarded-For` hop
-- Consider AWS WAF on the ALB (rate-based rules, managed bot rules) in addition to the in-app login limiter
+- AWS WAF on the ALB (`infra/terraform/waf.tf`) adds AWS managed rule groups and a per-IP rate limit on the account endpoints, in front of the in-app login limiter
 - The bundled `docker-compose.yml` uses default Postgres credentials and binds to 127.0.0.1 — for local development only
 - Add CORS headers if API is consumed by external clients
 

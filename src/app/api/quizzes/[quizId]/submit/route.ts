@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { isEnrolled, notEnrolled } from "@/lib/enrollment";
 import {
   awardQuizPassXp,
   processGamificationEvent,
@@ -27,11 +28,15 @@ export async function POST(
     where: { id: quizId, day: { module: { subject: { isPublished: true } } } },
     include: {
       questions: { orderBy: { sortOrder: "asc" } },
+      day: { select: { module: { select: { subjectId: true } } } },
     },
   });
 
   if (!quiz || quiz.questions.length === 0) {
     return NextResponse.json({ error: "Quiz not found" }, { status: 404 });
+  }
+  if (!(await isEnrolled(session.user.id, quiz.day.module.subjectId))) {
+    return notEnrolled();
   }
 
   const { results, score } = gradeAnswers(quiz.questions, answers);
