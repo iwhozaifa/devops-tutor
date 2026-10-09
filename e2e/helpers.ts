@@ -31,6 +31,8 @@ export async function makeAdmin(email: string) {
   await client.connect();
   await client.query(`UPDATE "User" SET role = 'ADMIN' WHERE email = $1`, [email]);
   await client.end();
+}
+
 /** Newest email sent to `to` by the file mail transport (see start-server.sh). */
 export async function latestMail(to: string): Promise<{ subject: string; text: string }> {
   const { readdirSync, readFileSync } = await import("node:fs");

@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 // than read from the catalog) so a new table is a conscious addition here.
 const TABLES = [
   "AdminAuditLog",
+  "EmailToken",
   "RateLimitBucket",
   "XpLedger",
   "UserBadge",
