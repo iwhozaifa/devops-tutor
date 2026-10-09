@@ -21,7 +21,7 @@ while IFS=$'\t' read -r name value; do
   printf '%s=%s\n' "${name##*/}" "$value"
 done >"$tmp"
 
-for required in DATABASE_URL AUTH_SECRET AUTH_URL; do
+for required in DATABASE_URL AUTH_SECRET AUTH_URL MAIL_TRANSPORT MAIL_FROM AWS_REGION; do
   grep -q "^${required}=" "$tmp" || { echo "missing SSM parameter ${SSM_PATH}/${required}" >&2; exit 1; }
 done
 
