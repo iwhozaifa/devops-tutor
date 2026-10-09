@@ -7,6 +7,14 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    coverage: {
+      provider: "v8",
+      include: ["src/lib/**/*.ts"],
+      exclude: ["src/lib/**/*.test.ts"],
+      reporter: ["text-summary", "html", "json-summary"],
+      // A floor, not a target: raise it as coverage grows, never lower it
+      thresholds: { lines: 68, statements: 66, functions: 65, branches: 52 },
+    },
     projects: [
       {
         extends: true,
