@@ -1,7 +1,10 @@
 import { db } from "@/lib/db";
+import { requireAdmin } from "@/lib/admin";
 import { Users, BookOpen, Activity, TrendingUp } from "lucide-react";
 
 export default async function AdminDashboardPage() {
+  await requireAdmin();
+
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 

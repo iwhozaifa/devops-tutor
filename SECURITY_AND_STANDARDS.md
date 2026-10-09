@@ -4,7 +4,9 @@
 
 ### Password Security
 - **bcrypt hashing** with cost factor 12 — passwords are never stored in plain text
-- Minimum 6-character password enforcement at registration
+- Password length 8–72 bytes enforced at registration (bcrypt ignores bytes past 72)
+- Emails are trimmed, lowercased and matched case-insensitively
+- Login attempts are rate limited per IP and per email inside the `authorize` callback (also covers `/api/auth/callback/credentials`); registration is rate limited per IP. The limiter is in-memory, so multi-instance deployments should add proxy-level limits too
 - Credentials validated server-side via Auth.js `authorize` callback — no client-side password comparison
 
 ### Session Management
@@ -30,7 +32,8 @@
 ### Input Validation
 - All API POST handlers validate required fields before processing
 - Type checking on all request body parameters
-- Zod available for schema validation on complex inputs
+- Every request body is parsed with a Zod schema (`src/lib/validation.ts`); malformed JSON or shapes return 400 instead of 500
+- Array sizes and string lengths are bounded; client-reported exam `timeSpent` is clamped to the exam time limit
 
 ### Authorization Checks
 - Every mutating API route calls `auth()` and returns 401 if no session
@@ -40,7 +43,12 @@
 ### Data Access Control
 - Users can only read/write their own progress, submissions, and enrollments
 - Unique constraints (`@@unique([userId, subjectId])`, `@@unique([userId, dayId])`, etc.) enforce one-record-per-user at the database level
-- No admin endpoints exposed without authentication (admin panel is Phase 5 future work)
+- Content and XP are only available for published subjects (`isPublished`)
+
+### Admin Access
+- Admin is a database role (`User.role`), not an email allowlist — emails are unverified, so matching on them would let anyone register an admin address
+- Promote/demote with `npm run admin:promote -- <email> [--demote]`
+- `requireAdmin()` (`src/lib/admin.ts`) is called in the admin layout **and** every admin page, and reads the role from the database so demotion is immediate
 
 ### SQL Injection Prevention
 - **Prisma ORM** — all queries are parameterized by default
@@ -51,7 +59,8 @@
 - React's JSX auto-escapes all rendered content by default
 - No `dangerouslySetInnerHTML` usage
 - External resource URLs are rendered as `href` attributes on anchor tags, not injected as HTML
-- Content Security Policy can be added via Next.js middleware (recommended for production)
+- Content Security Policy, HSTS and related headers are set in `next.config.ts`
+- `next/image` remote optimization is disabled (no remote patterns), so the server cannot be used as an open image proxy
 
 ---
 
@@ -65,13 +74,13 @@
 ### XP System Integrity
 - **Append-only XP ledger** — XP is never modified, only new entries are created
 - Total XP is always calculated as `SUM(amount)` from the ledger — auditable and tamper-resistant
-- Duplicate XP prevention: task completion and project step XP check for existing ledger entries before awarding
-- Badge awards check `UserBadge` existence before creating — no double awards
+- Duplicate XP prevention: a unique index on `XpLedger(userId, source, sourceId)` means each day, task, project step, project, quiz, exam and badge awards XP at most once per user, even under concurrent requests
+- Badge awards use `createMany({ skipDuplicates: true })` — no double awards or unique-violation errors
+- Badge counts for quizzes/exams count distinct passed items, not repeated attempts
 
 ### Streak Integrity
-- Streak logic uses date comparison (not trusting client timestamps)
-- `lastActiveDate` is set server-side using `new Date()`
-- Missed days reset streak to 1 — no client-side manipulation possible
+- Streaks advance at most once per UTC calendar day, computed server-side in a transaction
+- Missed days reset the current streak to 1; `longestStreak` is preserved
 
 ---
 
@@ -88,7 +97,8 @@
 - Generate `AUTH_SECRET` with `openssl rand -base64 32`
 - Use managed PostgreSQL (Neon, Supabase, RDS) with SSL connections
 - Enable `AUTH_TRUST_HOST=false` and set explicit `NEXTAUTH_URL` in production
-- Add rate limiting via middleware or reverse proxy (nginx, Cloudflare)
+- Add proxy-level rate limiting (nginx, Cloudflare) in addition to the in-app login limiter
+- The bundled `docker-compose.yml` uses default Postgres credentials and binds to 127.0.0.1 — for local development only
 - Add CORS headers if API is consumed by external clients
 
 ---

@@ -60,6 +60,20 @@ npm run db:seed
 npm run dev
 ```
 
+To give an account access to the admin panel, register it and then run:
+
+```bash
+npm run admin:promote -- you@example.com
+```
+
+Run the unit tests with `npm test`.
+
+### Dev server memory
+
+`npm run dev` starts `next dev` in its own memory-limited systemd scope (`scripts/dev.sh`). Turbopack peaks above 2 GB while compiling routes; on a machine with little free RAM, an uncapped dev server pushes the system into swap thrashing and the desktop freezes. With the cap, only the dev server is throttled (`MemoryHigh`, default 2G) or, at worst, killed (`MemoryMax`, default 3G).
+
+Adjust per machine with `DEV_MEMORY_HIGH`, `DEV_MEMORY_MAX`, `DEV_SWAP_MAX` and `DEV_NODE_HEAP_MB`, e.g. `DEV_MEMORY_MAX=4G npm run dev`. Use `npm run dev:uncapped` to run plain `next dev`. Without a systemd user session (e.g. macOS), the script falls back to an uncapped `next dev`.
+
 Open [http://localhost:3000](http://localhost:3000) to view the app.
 
 ---
@@ -99,8 +113,7 @@ project/
 │   │   ├── api/                 # API route handlers
 │   │   ├── layout.tsx           # Root layout
 │   │   └── page.tsx             # Landing page
-│   ├── lib/                     # Shared utilities (db, auth, etc.)
-│   └── middleware.ts            # Security headers & rate-limit stubs
+│   └── lib/                     # Shared utilities (db, auth, etc.)
 ├── docker-compose.yml
 ├── next.config.ts
 ├── tailwind.config.ts

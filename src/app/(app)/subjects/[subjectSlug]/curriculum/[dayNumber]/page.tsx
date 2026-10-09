@@ -21,7 +21,7 @@ export default async function DayPage({ params }: DayPageProps) {
   const userId = session?.user?.id;
 
   const subject = await db.subject.findUnique({
-    where: { slug: subjectSlug },
+    where: { slug: subjectSlug, isPublished: true },
     include: {
       modules: {
         include: {

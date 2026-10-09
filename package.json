@@ -3,11 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "bash scripts/dev.sh",
+    "dev:uncapped": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
     "db:seed": "tsx prisma/seed/index.ts",
+    "admin:promote": "tsx scripts/promote-admin.ts",
     "db:migrate": "npx prisma migrate dev",
     "db:studio": "npx prisma studio"
   },
@@ -43,6 +46,7 @@
     "eslint-config-next": "16.2.1",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.7"
   }
 }

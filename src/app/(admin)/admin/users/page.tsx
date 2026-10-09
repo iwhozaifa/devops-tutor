@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
+import { requireAdmin } from "@/lib/admin";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -10,9 +11,11 @@ interface Props {
 }
 
 export default async function AdminUsersPage({ searchParams }: Props) {
+  await requireAdmin();
+
   const params = await searchParams;
-  const page = Math.max(1, parseInt(params.page ?? "1", 10));
-  const query = params.q ?? "";
+  const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
+  const query = (params.q ?? "").slice(0, 100);
 
   const where = query
     ? {
@@ -40,13 +43,17 @@ export default async function AdminUsersPage({ searchParams }: Props) {
         streak: {
           select: { currentStreak: true },
         },
-        xpLedger: {
-          select: { amount: true },
-        },
       },
     }),
     db.user.count({ where }),
   ]);
+
+  const xpTotals = await db.xpLedger.groupBy({
+    by: ["userId"],
+    where: { userId: { in: users.map((u) => u.id) } },
+    _sum: { amount: true },
+  });
+  const xpByUser = new Map(xpTotals.map((x) => [x.userId, x._sum.amount ?? 0]));
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
@@ -107,10 +114,7 @@ export default async function AdminUsersPage({ searchParams }: Props) {
           </thead>
           <tbody>
             {users.map((user) => {
-              const totalXp = user.xpLedger.reduce(
-                (sum, x) => sum + x.amount,
-                0
-              );
+              const totalXp = xpByUser.get(user.id) ?? 0;
               return (
                 <tr
                   key={user.id}

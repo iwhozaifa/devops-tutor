@@ -33,7 +33,11 @@ export default async function QuizPage({ params }: QuizPageProps) {
     },
   });
 
-  if (!quiz || quiz.day.module.subject.slug !== subjectSlug) {
+  if (
+    !quiz ||
+    quiz.day.module.subject.slug !== subjectSlug ||
+    !quiz.day.module.subject.isPublished
+  ) {
     notFound();
   }
 
@@ -63,7 +67,6 @@ export default async function QuizPage({ params }: QuizPageProps) {
       options: (q.options as { id: string; text: string; isCorrect: boolean }[]).map(
         (o) => ({ id: o.id, text: o.text, isCorrect: false })
       ),
-      explanation: q.explanation,
     })),
   };
 

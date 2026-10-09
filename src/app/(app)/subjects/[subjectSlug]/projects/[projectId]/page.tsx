@@ -12,7 +12,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
   const { subjectSlug, projectId } = await params;
 
   const subject = await db.subject.findUnique({
-    where: { slug: subjectSlug },
+    where: { slug: subjectSlug, isPublished: true },
   });
 
   if (!subject) notFound();

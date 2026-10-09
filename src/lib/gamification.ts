@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import type { Badge, Streak } from "@/generated/prisma/client";
+import type { Badge, Streak, XpSource } from "@/generated/prisma/client";
 
 // ─── XP Rules ─────────────────────────────────────────────
 
@@ -83,21 +83,33 @@ export async function evaluateBadges(userId: string): Promise<Badge[]> {
   }
 
   if (triggerTypes.has("quiz_perfect_score")) {
-    stats.quiz_perfect_score = await db.quizAttempt.count({
-      where: { userId, score: 100 },
-    });
+    stats.quiz_perfect_score = (
+      await db.quizAttempt.findMany({
+        where: { userId, score: 100 },
+        select: { quizId: true },
+        distinct: ["quizId"],
+      })
+    ).length;
   }
 
   if (triggerTypes.has("quizzes_passed")) {
-    stats.quizzes_passed = await db.quizAttempt.count({
-      where: { userId, passed: true },
-    });
+    stats.quizzes_passed = (
+      await db.quizAttempt.findMany({
+        where: { userId, passed: true },
+        select: { quizId: true },
+        distinct: ["quizId"],
+      })
+    ).length;
   }
 
   if (triggerTypes.has("exams_passed")) {
-    stats.exams_passed = await db.examAttempt.count({
-      where: { userId, passed: true },
-    });
+    stats.exams_passed = (
+      await db.examAttempt.findMany({
+        where: { userId, passed: true },
+        select: { examId: true },
+        distinct: ["examId"],
+      })
+    ).length;
   }
 
   if (triggerTypes.has("projects_completed")) {
@@ -114,22 +126,22 @@ export async function evaluateBadges(userId: string): Promise<Badge[]> {
     const userValue = stats[trigger.type] ?? 0;
 
     if (userValue >= trigger.value) {
-      // Award the badge
-      await db.userBadge.create({
-        data: { userId, badgeId: badge.id },
+      // Award the badge — skipDuplicates makes concurrent evaluations safe
+      const { count } = await db.userBadge.createMany({
+        data: [{ userId, badgeId: badge.id }],
+        skipDuplicates: true,
       });
+      if (count === 0) continue;
 
       // Award badge XP if any
       if (badge.xpReward > 0) {
-        await db.xpLedger.create({
-          data: {
-            userId,
-            amount: badge.xpReward,
-            source: "BADGE_EARNED",
-            sourceId: badge.id,
-            description: `Badge earned: ${badge.title}`,
-          },
-        });
+        await awardXp(
+          userId,
+          "BADGE_EARNED",
+          badge.id,
+          badge.xpReward,
+          `Badge earned: ${badge.title}`
+        );
       }
 
       newlyEarned.push(badge);
@@ -141,44 +153,84 @@ export async function evaluateBadges(userId: string): Promise<Badge[]> {
 
 // ─── XP Award Functions ───────────────────────────────────
 
-export async function awardQuizPassXp(
+/**
+ * Award XP at most once per (user, source, sourceId). Relies on the unique
+ * index on XpLedger, so concurrent requests cannot double-award.
+ * Returns the XP actually awarded (0 if it was already awarded).
+ */
+export async function awardXp(
+  userId: string,
+  source: XpSource,
+  sourceId: string,
+  amount: number,
+  description: string
+): Promise<number> {
+  const { count } = await db.xpLedger.createMany({
+    data: [{ userId, amount, source, sourceId, description }],
+    skipDuplicates: true,
+  });
+  return count > 0 ? amount : 0;
+}
+
+export function awardQuizPassXp(
   userId: string,
   quizId: string,
   score: number,
   passingScore: number
 ): Promise<number> {
   const xp = 50 + Math.min(60, (score - passingScore) * 2);
-
-  await db.xpLedger.create({
-    data: {
-      userId,
-      amount: xp,
-      source: "QUIZ_PASS",
-      sourceId: quizId,
-      description: `Quiz passed with score ${score}%`,
-    },
-  });
-
-  return xp;
+  return awardXp(
+    userId,
+    "QUIZ_PASS",
+    quizId,
+    xp,
+    `Quiz passed with score ${score}%`
+  );
 }
 
-export async function awardExamPassXp(
+export function awardExamPassXp(
   userId: string,
   examId: string
 ): Promise<number> {
-  const xp = 1000;
+  return awardXp(userId, "EXAM_PASS", examId, 1000, "Exam passed");
+}
 
-  await db.xpLedger.create({
-    data: {
-      userId,
-      amount: xp,
-      source: "EXAM_PASS",
-      sourceId: examId,
-      description: "Exam passed",
-    },
+// ─── Streaks ──────────────────────────────────────────────
+
+function utcDay(date: Date): number {
+  return Math.floor(date.getTime() / 86_400_000);
+}
+
+/** Pure streak transition, exported for testing. Days are UTC calendar days. */
+export function nextStreak(
+  prev: { currentStreak: number; longestStreak: number; lastActiveDate: Date | null } | null,
+  now: Date
+): { currentStreak: number; longestStreak: number } {
+  if (!prev || !prev.lastActiveDate) {
+    return { currentStreak: 1, longestStreak: Math.max(1, prev?.longestStreak ?? 0) };
+  }
+  const gap = utcDay(now) - utcDay(prev.lastActiveDate);
+  if (gap <= 0) {
+    return { currentStreak: prev.currentStreak, longestStreak: prev.longestStreak };
+  }
+  const currentStreak = gap === 1 ? prev.currentStreak + 1 : 1;
+  return { currentStreak, longestStreak: Math.max(prev.longestStreak, currentStreak) };
+}
+
+/** Record activity for today; increments at most once per UTC day. */
+export async function recordStreakActivity(userId: string): Promise<void> {
+  const now = new Date();
+  const today = new Date(utcDay(now) * 86_400_000);
+
+  await db.$transaction(async (tx) => {
+    const prev = await tx.streak.findUnique({ where: { userId } });
+    const next = nextStreak(prev, now);
+    await tx.streak.upsert({
+      where: { userId },
+      update: { ...next, lastActiveDate: today },
+      create: { userId, ...next, lastActiveDate: today },
+    });
   });
-
-  return xp;
 }
 
 // ─── Event Processor ──────────────────────────────────────

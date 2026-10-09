@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { awardXp, recordStreakActivity } from "@/lib/gamification";
+import { dayProgressSchema, parseBody } from "@/lib/validation";
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,25 +11,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { dayId, status } = body;
+    const { data, error } = await parseBody(request, dayProgressSchema);
+    if (error) return error;
+    const { dayId, status } = data;
 
-    if (!dayId || !status) {
-      return NextResponse.json(
-        { error: "dayId and status are required" },
-        { status: 400 }
-      );
-    }
-
-    if (!["NOT_STARTED", "IN_PROGRESS", "COMPLETED"].includes(status)) {
-      return NextResponse.json(
-        { error: "Invalid status" },
-        { status: 400 }
-      );
-    }
-
-    // Verify day exists
-    const day = await db.day.findUnique({ where: { id: dayId } });
+    // Verify day exists and belongs to a published subject
+    const day = await db.day.findFirst({
+      where: { id: dayId, module: { subject: { isPublished: true } } },
+    });
     if (!day) {
       return NextResponse.json({ error: "Day not found" }, { status: 404 });
     }
@@ -53,49 +44,16 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Award XP on completion
     if (isCompleting) {
-      await db.xpLedger.create({
-        data: {
-          userId: session.user.id,
-          amount: 100,
-          source: "DAY_COMPLETE",
-          sourceId: dayId,
-          description: `Completed day: ${day.title}`,
-        },
-      });
-
-      // Update streak
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      await db.streak.upsert({
-        where: { userId: session.user.id },
-        update: {
-          currentStreak: { increment: 1 },
-          longestStreak: {
-            increment: 0, // handled below
-          },
-          lastActiveDate: today,
-        },
-        create: {
-          userId: session.user.id,
-          currentStreak: 1,
-          longestStreak: 1,
-          lastActiveDate: today,
-        },
-      });
-
-      // Ensure longestStreak >= currentStreak
-      const streak = await db.streak.findUnique({
-        where: { userId: session.user.id },
-      });
-      if (streak && streak.currentStreak > streak.longestStreak) {
-        await db.streak.update({
-          where: { userId: session.user.id },
-          data: { longestStreak: streak.currentStreak },
-        });
-      }
+      // XP is awarded once per day, even if it is un-completed and re-completed
+      await awardXp(
+        session.user.id,
+        "DAY_COMPLETE",
+        dayId,
+        100,
+        `Completed day: ${day.title}`
+      );
+      await recordStreakActivity(session.user.id);
     }
 
     return NextResponse.json(progress);

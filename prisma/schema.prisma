@@ -9,6 +9,11 @@ datasource db {
 
 // ─── Auth Models ───────────────────────────────────────────
 
+enum Role {
+  USER
+  ADMIN
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -16,6 +21,7 @@ model User {
   emailVerified DateTime?
   image         String?
   passwordHash  String?
+  role          Role      @default(USER)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -392,6 +398,7 @@ model XpLedger {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, source, sourceId])
   @@index([userId, createdAt])
 }
 

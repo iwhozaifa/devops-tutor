@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { awardXp } from "@/lib/gamification";
+import { parseBody, taskSubmitSchema } from "@/lib/validation";
 
 export async function POST(
   request: NextRequest,
@@ -14,18 +16,14 @@ export async function POST(
   const { taskId } = await params;
   const userId = session.user.id;
 
-  const body = await request.json();
-  const { status, notes } = body as {
-    status: "COMPLETED" | "ATTEMPTED" | "SKIPPED";
-    notes?: string;
-  };
+  const { data, error } = await parseBody(request, taskSubmitSchema);
+  if (error) return error;
+  const { status, notes } = data;
 
-  if (!["COMPLETED", "ATTEMPTED", "SKIPPED"].includes(status)) {
-    return NextResponse.json({ error: "Invalid status" }, { status: 400 });
-  }
-
-  // Verify task exists
-  const task = await db.dailyTask.findUnique({ where: { id: taskId } });
+  // Verify task exists and belongs to a published subject
+  const task = await db.dailyTask.findFirst({
+    where: { id: taskId, day: { module: { subject: { isPublished: true } } } },
+  });
   if (!task) {
     return NextResponse.json({ error: "Task not found" }, { status: 404 });
   }
@@ -48,28 +46,15 @@ export async function POST(
     },
   });
 
-  // Award XP if completed
+  // Award XP once per task
   if (status === "COMPLETED") {
-    // Check if XP was already awarded for this task
-    const existingXp = await db.xpLedger.findFirst({
-      where: {
-        userId,
-        source: "TASK_COMPLETE",
-        sourceId: taskId,
-      },
-    });
-
-    if (!existingXp) {
-      await db.xpLedger.create({
-        data: {
-          userId,
-          amount: task.xpReward,
-          source: "TASK_COMPLETE",
-          sourceId: taskId,
-          description: `Completed task: ${task.title}`,
-        },
-      });
-    }
+    await awardXp(
+      userId,
+      "TASK_COMPLETE",
+      taskId,
+      task.xpReward,
+      `Completed task: ${task.title}`
+    );
   }
 
   return NextResponse.json({ success: true, submission });

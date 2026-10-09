@@ -1128,7 +1128,7 @@ Topics covered: etcd backup, static pod manifests, kubeadm, cluster upgrades, ku
 ### 11.1 Admin Panel
 
 **Admin guard** (`src/lib/admin.ts`):
-- Reads `ADMIN_EMAILS` from environment variable (comma-separated)
+- Admin is the `User.role` database column (`USER` / `ADMIN`); promote with `npm run admin:promote -- <email>`
 - `isAdmin(email)` checks if the given email is in the list
 - No database role field needed — simple, secure
 
@@ -1196,21 +1196,20 @@ Topics covered: etcd backup, static pod manifests, kubeadm, cluster upgrades, ku
 
 **Impact**: First request after cache expiry hits the database; all subsequent requests for the next hour are served from cache. Reduces database load significantly for the most-hit API endpoint.
 
-### 11.4 Security Middleware (`src/middleware.ts`)
+### 11.4 Security Headers (`next.config.ts`)
 
-Applied to all routes except static assets:
+Applied to all routes via `headers()` in `next.config.ts`. (An earlier `src/middleware.ts` duplicated these and set placeholder `X-RateLimit-*` headers that implied limiting that did not exist; it was removed.)
 
 | Header | Value | Protection |
 |--------|-------|-----------|
+| Content-Security-Policy | `default-src 'self'`, `frame-ancestors 'none'`, `object-src 'none'`, … | Restricts script/frame/form origins |
+| Strict-Transport-Security | max-age=63072000; includeSubDomains | Forces HTTPS |
 | X-Content-Type-Options | nosniff | Prevents MIME-type sniffing attacks |
 | X-Frame-Options | DENY | Prevents clickjacking by blocking iframe embedding |
-| X-XSS-Protection | 1; mode=block | Legacy XSS filter for older browsers |
 | Referrer-Policy | strict-origin-when-cross-origin | Controls referrer information leakage |
 | Permissions-Policy | camera=(), microphone=(), geolocation=() | Blocks access to sensitive device APIs |
 
-**Rate limiting stubs**: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` headers are set as a contract for reverse proxy integration.
-
-**Impact**: Defense-in-depth security layer. Protects against common web attacks regardless of application logic.
+**Rate limiting**: login (per IP and per email, enforced in the Credentials `authorize` callback) and registration (per IP) use an in-memory limiter in `src/lib/rate-limit.ts`.
 
 ### 11.5 README & Documentation
 
@@ -1271,7 +1270,7 @@ Applied to all routes except static assets:
 - `.env` gitignored — no secrets in version control
 - `.env.example` provided with placeholder values
 - `AUTH_SECRET` required for JWT signing
-- Admin access controlled by `ADMIN_EMAILS` environment variable
+- Admin access controlled by the `User.role` column, checked in every admin page via `requireAdmin()`
 
 ---
 
@@ -1337,13 +1336,13 @@ Applied to all routes except static assets:
 | `auth.ts` | Auth.js v5 config — providers, callbacks, adapter |
 | `auth-actions.ts` | Server actions: registerUser, loginUser, logoutUser |
 | `gamification.ts` | XP engine, level calculator, badge evaluator, streak manager, orchestrator |
-| `admin.ts` | Admin role check via ADMIN_EMAILS env var |
+| `admin.ts` | `isAdmin` / `requireAdmin` — role check against the database |
 | `utils.ts` | `cn()` utility for className merging |
 
 ### Middleware
 | File | Purpose |
 |------|---------|
-| `src/middleware.ts` | Security headers and rate-limit stubs on all routes |
+| `src/lib/rate-limit.ts` | In-memory login/registration rate limiter |
 
 ### Type Definitions
 | File | Purpose |

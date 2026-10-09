@@ -18,7 +18,7 @@ export default async function ExamsPage({ params }: ExamsPageProps) {
   }
 
   const subject = await db.subject.findUnique({
-    where: { slug: subjectSlug },
+    where: { slug: subjectSlug, isPublished: true },
     include: {
       certifications: {
         include: {

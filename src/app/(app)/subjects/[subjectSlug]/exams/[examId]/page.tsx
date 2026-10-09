@@ -29,7 +29,11 @@ export default async function ExamPage({ params }: ExamPageProps) {
     },
   });
 
-  if (!exam || exam.certification.subject.slug !== subjectSlug) {
+  if (
+    !exam ||
+    exam.certification.subject.slug !== subjectSlug ||
+    !exam.certification.subject.isPublished
+  ) {
     notFound();
   }
 
@@ -56,7 +60,6 @@ export default async function ExamPage({ params }: ExamPageProps) {
       options: (q.options as { id: string; text: string; isCorrect: boolean }[]).map(
         (o) => ({ id: o.id, text: o.text, isCorrect: false })
       ),
-      explanation: q.explanation,
       domain: q.domain,
     })),
   };

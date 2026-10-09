@@ -1,6 +1,9 @@
 import { db } from "@/lib/db";
+import { requireAdmin } from "@/lib/admin";
 
 export default async function AdminAnalyticsPage() {
+  await requireAdmin();
+
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 

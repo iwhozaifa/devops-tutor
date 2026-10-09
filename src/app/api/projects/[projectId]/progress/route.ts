@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { awardXp } from "@/lib/gamification";
+import { parseBody, projectProgressSchema } from "@/lib/validation";
 
 export async function POST(
   request: NextRequest,
@@ -14,15 +16,14 @@ export async function POST(
   const { projectId } = await params;
   const userId = session.user.id;
 
-  const body = await request.json();
-  const { stepCompleted } = body as { stepCompleted: number };
+  const { data, error } = await parseBody(request, projectProgressSchema);
+  if (error) return error;
+  const { stepCompleted } = data;
 
-  if (typeof stepCompleted !== "number" || stepCompleted < 0) {
-    return NextResponse.json({ error: "Invalid step" }, { status: 400 });
-  }
-
-  // Fetch project to validate
-  const project = await db.project.findUnique({ where: { id: projectId } });
+  // Fetch project to validate (must belong to a published subject)
+  const project = await db.project.findFirst({
+    where: { id: projectId, subject: { isPublished: true } },
+  });
   if (!project) {
     return NextResponse.json({ error: "Project not found" }, { status: 404 });
   }
@@ -40,7 +41,6 @@ export async function POST(
   }
 
   const newCurrentStep = stepCompleted + 1;
-  const allComplete = newCurrentStep >= totalSteps;
 
   // Get existing progress to determine max step
   const existing = await db.projectProgress.findUnique({
@@ -72,49 +72,24 @@ export async function POST(
     },
   });
 
-  // Award step XP (50 XP per step) — check for duplicates
-  const stepSourceId = `${projectId}-step-${stepCompleted}`;
-  const existingStepXp = await db.xpLedger.findFirst({
-    where: {
-      userId,
-      source: "PROJECT_STEP",
-      sourceId: stepSourceId,
-    },
-  });
+  // Award step XP (50 XP per step) — once per step
+  await awardXp(
+    userId,
+    "PROJECT_STEP",
+    `${projectId}-step-${stepCompleted}`,
+    50,
+    `Completed step ${stepCompleted + 1}: ${steps[stepCompleted]?.title}`
+  );
 
-  if (!existingStepXp) {
-    await db.xpLedger.create({
-      data: {
-        userId,
-        amount: 50,
-        source: "PROJECT_STEP",
-        sourceId: stepSourceId,
-        description: `Completed step ${stepCompleted + 1}: ${steps[stepCompleted]?.title}`,
-      },
-    });
-  }
-
-  // Award project completion XP if all steps done
+  // Award project completion XP if all steps done — once per project
   if (effectiveComplete) {
-    const existingProjectXp = await db.xpLedger.findFirst({
-      where: {
-        userId,
-        source: "PROJECT_COMPLETE",
-        sourceId: projectId,
-      },
-    });
-
-    if (!existingProjectXp) {
-      await db.xpLedger.create({
-        data: {
-          userId,
-          amount: project.xpReward,
-          source: "PROJECT_COMPLETE",
-          sourceId: projectId,
-          description: `Completed project: ${project.title}`,
-        },
-      });
-    }
+    await awardXp(
+      userId,
+      "PROJECT_COMPLETE",
+      projectId,
+      project.xpReward,
+      `Completed project: ${project.title}`
+    );
   }
 
   return NextResponse.json({

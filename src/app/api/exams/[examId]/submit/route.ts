@@ -5,17 +5,8 @@ import {
   awardExamPassXp,
   processGamificationEvent,
 } from "@/lib/gamification";
-
-interface AnswerPayload {
-  questionId: string;
-  selectedOptionIds: string[];
-}
-
-interface ExamOption {
-  id: string;
-  text: string;
-  isCorrect: boolean;
-}
+import { gradeAnswers } from "@/lib/grading";
+import { examSubmitSchema, parseBody } from "@/lib/validation";
 
 export async function POST(
   request: NextRequest,
@@ -28,70 +19,41 @@ export async function POST(
 
   const { examId } = await params;
 
-  const body = await request.json();
-  const answers: AnswerPayload[] = body.answers;
-  const timeSpent: number = body.timeSpent ?? 0;
+  const { data, error } = await parseBody(request, examSubmitSchema);
+  if (error) return error;
+  const { answers } = data;
 
-  if (!Array.isArray(answers)) {
-    return NextResponse.json(
-      { error: "Invalid request body" },
-      { status: 400 }
-    );
-  }
-
-  const exam = await db.exam.findUnique({
-    where: { id: examId },
+  const exam = await db.exam.findFirst({
+    where: { id: examId, certification: { subject: { isPublished: true } } },
     include: {
       questions: { orderBy: { sortOrder: "asc" } },
     },
   });
 
-  if (!exam) {
+  if (!exam || exam.questions.length === 0) {
     return NextResponse.json({ error: "Exam not found" }, { status: 404 });
   }
 
-  // Grade each question
-  const results = exam.questions.map((question) => {
-    const options = question.options as unknown as ExamOption[];
-    const correctOptionIds = options
-      .filter((o) => o.isCorrect)
-      .map((o) => o.id)
-      .sort();
+  // timeSpent is client-reported; clamp to the exam's time limit
+  const timeSpent = Math.min(data.timeSpent, exam.timeLimit * 60);
 
-    const userAnswer = answers.find((a) => a.questionId === question.id);
-    const selectedOptionIds = (userAnswer?.selectedOptionIds ?? []).sort();
-
-    const correct =
-      correctOptionIds.length === selectedOptionIds.length &&
-      correctOptionIds.every((id, i) => id === selectedOptionIds[i]);
-
-    return {
-      questionId: question.id,
-      correct,
-      selectedOptionIds: userAnswer?.selectedOptionIds ?? [],
-      correctOptionIds,
-      explanation: question.explanation,
-    };
-  });
-
-  const correctCount = results.filter((r) => r.correct).length;
-  const score = Math.round((correctCount / exam.questions.length) * 100);
+  const { results, score } = gradeAnswers(exam.questions, answers);
   const passed = score >= exam.passingScore;
 
-  // Save attempt
+  // Save attempt (only answers to this exam's questions)
+  const questionIds = new Set(exam.questions.map((q) => q.id));
   await db.examAttempt.create({
     data: {
       userId: session.user.id,
       examId,
       score,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      answers: answers as any,
+      answers: answers.filter((a) => questionIds.has(a.questionId)),
       passed,
       timeSpent,
     },
   });
 
-  // Gamification: award XP and evaluate badges if passed
+  // Gamification: award XP (first pass only) and evaluate badges if passed
   let gamification = null;
   if (passed) {
     const xpAwarded = await awardExamPassXp(session.user.id, examId);

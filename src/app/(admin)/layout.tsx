@@ -1,7 +1,5 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
-import { auth } from "@/lib/auth";
-import { isAdmin } from "@/lib/admin";
+import { requireAdmin } from "@/lib/admin";
 import {
   LayoutDashboard,
   BookOpen,
@@ -22,11 +20,7 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
-
-  if (!session?.user || !isAdmin(session.user.email)) {
-    redirect("/dashboard");
-  }
+  await requireAdmin();
 
   return (
     <div className="flex h-full min-h-screen">

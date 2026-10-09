@@ -70,12 +70,12 @@ export default function RegisterPage() {
             name="password"
             type="password"
             required
-            minLength={6}
+            minLength={8}
             placeholder="••••••••"
             className="flex h-9 w-full rounded-lg border border-input bg-background px-3 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
           <p className="text-xs text-muted-foreground">
-            Must be at least 6 characters
+            Must be at least 8 characters
           </p>
         </div>
 

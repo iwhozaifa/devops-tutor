@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { enrollmentSchema, parseBody } from "@/lib/validation";
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,19 +10,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { subjectId } = body;
+    const { data, error } = await parseBody(request, enrollmentSchema);
+    if (error) return error;
+    const { subjectId } = data;
 
-    if (!subjectId) {
-      return NextResponse.json(
-        { error: "subjectId is required" },
-        { status: 400 }
-      );
-    }
-
-    // Verify subject exists
-    const subject = await db.subject.findUnique({
-      where: { id: subjectId },
+    // Verify subject exists and is published
+    const subject = await db.subject.findFirst({
+      where: { id: subjectId, isPublished: true },
     });
 
     if (!subject) {
