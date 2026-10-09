@@ -4,6 +4,11 @@ mock_provider "aws" {
   source = "./tests/mocks/aws"
 }
 
+mock_provider "aws" {
+  alias  = "us_east_1"
+  source = "./tests/mocks/aws"
+}
+
 mock_provider "random" {
   source = "./tests/mocks/random"
 }
@@ -12,6 +17,7 @@ variables {
   domain_name     = "tutor.example.com"
   certificate_arn = "arn:aws:acm:eu-west-1:123456789012:certificate/test"
   github_repo     = "iwhozaifa/devops-tutor"
+  alarm_email     = "ops@example.com"
 }
 
 run "drill_role_is_scoped_to_drill_instances" {
