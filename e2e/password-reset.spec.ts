@@ -7,6 +7,8 @@ test("forgot password: the emailed link sets a new password and the old one stop
 
   await page.goto("/login");
   await page.getByRole("link", { name: "Forgot password?" }).click();
+  // Client-side navigation: wait for the new page before filling its form
+  await expect(page.getByRole("heading", { name: "Reset your password" })).toBeVisible();
   await page.getByLabel("Email").fill(email);
   await page.getByRole("button", { name: "Send reset link" }).click();
   await expect(page.getByText("If an account exists for that email")).toBeVisible();
