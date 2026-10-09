@@ -11,6 +11,10 @@ The production stack from [docs/DEPLOYMENT.md](../../docs/DEPLOYMENT.md), as cod
 - SSM Parameter Store: every runtime setting under `/devops-tutor/prod/`, including a generated DB password and `AUTH_SECRET`
 - IAM: a least-privilege instance role, and a GitHub OIDC deploy role limited to the repo's `production` environment
 - SES domain identity, CloudWatch log group
+- AWS WAF on the ALB:
+  - managed rule groups: common, known bad inputs, IP reputation. The 8 KB body-size rule only counts, because exam submissions can be larger.
+  - a blocking rate limit of 300 requests per IP per 5 minutes on `/api/auth/`, `/login`, `/register` and `/forgot-password`
+  - blocked and counted requests are logged to `aws-waf-logs-devops-tutor`
 
 ## Tests
 
