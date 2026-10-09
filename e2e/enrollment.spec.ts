@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 import { register } from "./helpers";
 
 test("an unenrolled learner is asked to enroll instead of recording progress", async ({ page }) => {
