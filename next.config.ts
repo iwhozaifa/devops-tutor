@@ -2,23 +2,6 @@ import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV !== "production";
 
-// Next.js and next-themes inject inline scripts, so script-src needs
-// 'unsafe-inline' unless nonces are introduced. The remaining directives
-// still block framing, plugin content, base-tag hijacking and foreign
-// form targets.
-const csp = [
-  "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: https:",
-  "font-src 'self' data:",
-  `connect-src 'self'${isDev ? " ws:" : ""}`,
-  "object-src 'none'",
-  "base-uri 'self'",
-  "form-action 'self' https://github.com",
-  "frame-ancestors 'none'",
-].join("; ");
-
 const nextConfig: NextConfig = {
   // Self-contained server in .next/standalone for the Docker image
   output: "standalone",
@@ -35,7 +18,7 @@ const nextConfig: NextConfig = {
       {
         source: "/(.*)",
         headers: [
-          { key: "Content-Security-Policy", value: csp },
+          // Content-Security-Policy is set per request (with a nonce) in src/proxy.ts
           // Not in dev, so the browser does not pin localhost to https
           ...(isDev
             ? []
