@@ -109,6 +109,7 @@ Under `/devops-tutor/prod/`. Each parameter name becomes an environment variable
 | `MAIL_TRANSPORT` | `ses` (required in production) |
 | `MAIL_FROM` | `DevOps Tutor <no-reply@your-domain>`, an address on the verified SES domain |
 | `AWS_REGION` | the SES region, normally the same as the rest of the stack |
+| `LEGAL_OPERATOR_NAME`, `LEGAL_CONTACT_EMAIL` | who runs the site and a contact address, shown on `/privacy` and `/terms`. Have both pages reviewed before launch |
 
 **Why there are two URLs:**
 - The app connects through node-postgres. It reads `sslmode=verify-full` and verifies RDS against the CA bundle in the image (`NODE_EXTRA_CA_CERTS`).
