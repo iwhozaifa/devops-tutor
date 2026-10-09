@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import {
   User,
@@ -17,6 +18,8 @@ import { xpProgress } from "@/lib/gamification";
 import { XpBar } from "@/components/gamification/XpBar";
 import { BadgeDisplay } from "@/components/gamification/BadgeDisplay";
 import { StreakCounter } from "@/components/gamification/StreakCounter";
+
+export const metadata: Metadata = { title: "Profile" };
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -97,6 +100,8 @@ export default async function ProfilePage() {
       <div className="rounded-lg border bg-card p-6 shadow-sm">
         <div className="flex items-center gap-4">
           {user.image ? (
+            // OAuth avatar from an arbitrary host; not worth proxying through the image optimizer
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={user.image}
               alt=""

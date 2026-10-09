@@ -41,13 +41,10 @@ interface MobileNavProps {
 }
 
 export function MobileNav({ userName, userEmail, xp, streak }: MobileNavProps) {
-  const [open, setOpen] = useState(false);
   const pathname = usePathname();
-
-  // Close on route change
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+  // Remember which path the drawer was opened on, so navigating closes it
+  const [openOn, setOpenOn] = useState<string | null>(null);
+  const open = openOn === pathname;
 
   // Prevent body scroll when open
   useEffect(() => {
@@ -62,7 +59,7 @@ export function MobileNav({ userName, userEmail, xp, streak }: MobileNavProps) {
   }, [open]);
 
   const handleOverlayClick = useCallback(() => {
-    setOpen(false);
+    setOpenOn(null);
   }, []);
 
   return (
@@ -74,7 +71,7 @@ export function MobileNav({ userName, userEmail, xp, streak }: MobileNavProps) {
           DevOps Tutor
         </Link>
         <button
-          onClick={() => setOpen(true)}
+          onClick={() => setOpenOn(pathname)}
           className="flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent"
           aria-label="Open navigation"
         >
@@ -100,7 +97,7 @@ export function MobileNav({ userName, userEmail, xp, streak }: MobileNavProps) {
                 DevOps Tutor
               </span>
               <button
-                onClick={() => setOpen(false)}
+                onClick={() => setOpenOn(null)}
                 className="flex h-8 w-8 items-center justify-center rounded-md hover:bg-sidebar-accent/50"
                 aria-label="Close navigation"
               >

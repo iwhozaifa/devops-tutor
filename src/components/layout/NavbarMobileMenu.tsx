@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
@@ -11,17 +11,15 @@ interface NavbarMobileMenuProps {
 }
 
 export function NavbarMobileMenu({ isLoggedIn }: NavbarMobileMenuProps) {
-  const [open, setOpen] = useState(false);
   const pathname = usePathname();
-
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+  // Remember which path the menu was opened on, so navigating closes it
+  const [openOn, setOpenOn] = useState<string | null>(null);
+  const open = openOn === pathname;
 
   return (
     <div className="relative">
       <button
-        onClick={() => setOpen(!open)}
+        onClick={() => setOpenOn(open ? null : pathname)}
         className="flex h-9 w-9 items-center justify-center rounded-md hover:bg-accent"
         aria-label="Toggle menu"
       >

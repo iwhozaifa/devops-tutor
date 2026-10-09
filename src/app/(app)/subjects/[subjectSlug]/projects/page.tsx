@@ -27,7 +27,7 @@ export default async function ProjectsPage({ params }: ProjectsPageProps) {
   });
 
   // Fetch user progress for all projects
-  let progressMap: Record<string, { currentStep: number; status: string }> = {};
+  const progressMap: Record<string, { currentStep: number; status: string }> = {};
   if (userId && projects.length > 0) {
     const progressRecords = await db.projectProgress.findMany({
       where: {

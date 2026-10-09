@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Trophy, Award } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { calculateLevel } from "@/lib/gamification";
 import { cn } from "@/lib/utils";
+
+export const metadata: Metadata = { title: "Leaderboard" };
 
 export default async function LeaderboardPage() {
   const session = await auth();
@@ -119,6 +122,8 @@ export default async function LeaderboardPage() {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       {entry.image ? (
+                        // OAuth avatar from an arbitrary host; not worth proxying through the image optimizer
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={entry.image}
                           alt=""

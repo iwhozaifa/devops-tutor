@@ -62,7 +62,7 @@ export default async function DayPage({ params }: DayPageProps) {
   if (!day) notFound();
 
   // Fetch task submissions for current user
-  let taskSubmissions: Record<string, { id: string; status: string; notes: string | null; submittedAt: Date }> = {};
+  const taskSubmissions: Record<string, { id: string; status: string; notes: string | null; submittedAt: Date }> = {};
   if (userId && day.tasks.length > 0) {
     const submissions = await db.taskSubmission.findMany({
       where: {
