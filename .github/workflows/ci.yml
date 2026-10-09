@@ -36,7 +36,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -71,7 +71,7 @@ jobs:
       AUTH_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -114,7 +114,7 @@ jobs:
       TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -149,7 +149,7 @@ jobs:
       E2E_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: .nvmrc
           cache: npm
