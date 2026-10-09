@@ -17,5 +17,4 @@ logger.info("server starting", {
   githubAuth: Boolean(env.AUTH_GITHUB_ID),
   trustedProxyHops: env.TRUSTED_PROXY_HOPS,
   dbPoolMax: env.DB_POOL_MAX,
-  rateLimiter: "in-memory, per process",
 });
