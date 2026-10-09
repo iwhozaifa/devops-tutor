@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { isEnrolled, notEnrolled } from "@/lib/enrollment";
 import { logger } from "@/lib/logger";
 import { awardXp, recordStreakActivity } from "@/lib/gamification";
 import { dayProgressSchema, parseBody } from "@/lib/validation";
@@ -19,9 +20,13 @@ export async function POST(request: NextRequest) {
     // Verify day exists and belongs to a published subject
     const day = await db.day.findFirst({
       where: { id: dayId, module: { subject: { isPublished: true } } },
+      include: { module: { select: { subjectId: true } } },
     });
     if (!day) {
       return NextResponse.json({ error: "Day not found" }, { status: 404 });
+    }
+    if (!(await isEnrolled(session.user.id, day.module.subjectId))) {
+      return notEnrolled();
     }
 
     const isCompleting = status === "COMPLETED";
