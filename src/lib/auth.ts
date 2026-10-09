@@ -1,15 +1,11 @@
-import NextAuth, { CredentialsSignin } from "next-auth";
+import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import Credentials from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
-import bcrypt from "bcryptjs";
 import { db } from "./db";
-import { env } from "./env";
-import { clientIpFrom, rateLimit } from "./rate-limit";
+import { authorizeCredentials } from "./credentials";
 
-export class RateLimitedSignin extends CredentialsSignin {
-  code = "rate_limited";
-}
+export { RateLimitedSignin } from "./credentials";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(db),
@@ -26,37 +22,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials, request) {
-        if (!credentials?.email || !credentials?.password) return null;
-
-        // Enforced here (not only in the server action) because NextAuth's
-        // /api/auth/callback/credentials endpoint calls authorize directly.
-        const email = String(credentials.email).trim().toLowerCase();
-        const ip = clientIpFrom(request.headers, env().TRUSTED_PROXY_HOPS);
-        if (
-          !rateLimit(`login:ip:${ip}`, 20, 15 * 60 * 1000) ||
-          !rateLimit(`login:email:${email}`, 10, 15 * 60 * 1000)
-        ) {
-          throw new RateLimitedSignin();
-        }
-
-        const user = await db.user.findFirst({
-          where: {
-            email: { equals: email, mode: "insensitive" },
-          },
-        });
-
-        if (!user || !user.passwordHash) return null;
-
-        const isValid = await bcrypt.compare(
-          credentials.password as string,
-          user.passwordHash
-        );
-
-        if (!isValid) return null;
-
-        return { id: user.id, name: user.name, email: user.email, image: user.image };
-      },
+      authorize: (credentials, request) => authorizeCredentials(credentials, request.headers),
     }),
   ],
   callbacks: {
