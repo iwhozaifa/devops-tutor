@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState } from "react";
+import { Suspense, useActionState } from "react";
 import Link from "next/link";
 import { Terminal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { loginUser } from "@/lib/auth-actions";
+import { ResetNotice } from "./ResetNotice";
 
 export default function LoginPage() {
   const [state, formAction, pending] = useActionState(
@@ -25,6 +26,10 @@ export default function LoginPage() {
           Sign in to continue your learning journey
         </p>
       </div>
+
+      <Suspense fallback={null}>
+        <ResetNotice />
+      </Suspense>
 
       <form action={formAction} className="space-y-4">
         {state?.error && (
@@ -48,9 +53,14 @@ export default function LoginPage() {
         </div>
 
         <div className="space-y-2">
-          <label htmlFor="password" className="text-sm font-medium">
-            Password
-          </label>
+          <div className="flex items-center justify-between">
+            <label htmlFor="password" className="text-sm font-medium">
+              Password
+            </label>
+            <Link href="/forgot-password" className="text-xs text-muted-foreground hover:text-primary hover:underline">
+              Forgot password?
+            </Link>
+          </div>
           <input
             id="password"
             name="password"
