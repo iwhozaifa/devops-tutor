@@ -39,5 +39,5 @@ export async function authorizeCredentials(
   const isValid = await bcrypt.compare(String(credentials.password), user.passwordHash);
   if (!isValid) return null;
 
-  return { id: user.id, name: user.name, email: user.email, image: user.image };
+  return { id: user.id, name: user.name, email: user.email, image: user.image, tokenVersion: user.tokenVersion };
 }
