@@ -15,6 +15,11 @@ output "github_repository_variables" {
     AWS_DEPLOY_ROLE_ARN = aws_iam_role.github_deploy.arn
     ECR_REPOSITORY      = aws_ecr_repository.repo["devops-tutor"].name
     EC2_INSTANCE_ID     = aws_instance.app.id
+    # Restore drill (.github/workflows/restore-drill.yml)
+    AWS_RESTORE_ROLE_ARN = aws_iam_role.restore_drill.arn
+    DB_INSTANCE          = aws_db_instance.main.identifier
+    DB_SECURITY_GROUP_ID = aws_security_group.db.id
+    MIGRATE_IMAGE_REPO   = aws_ecr_repository.repo["devops-tutor-migrate"].repository_url
   }
 }
 
