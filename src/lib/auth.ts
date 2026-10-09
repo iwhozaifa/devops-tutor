@@ -4,7 +4,8 @@ import Credentials from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
 import bcrypt from "bcryptjs";
 import { db } from "./db";
-import { rateLimit } from "./rate-limit";
+import { env } from "./env";
+import { clientIpFrom, rateLimit } from "./rate-limit";
 
 export class RateLimitedSignin extends CredentialsSignin {
   code = "rate_limited";
@@ -17,7 +18,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: "/login",
   },
   providers: [
-    GitHub,
+    // Only offered when configured; otherwise it fails at sign-in time
+    ...(process.env.AUTH_GITHUB_ID && process.env.AUTH_GITHUB_SECRET ? [GitHub] : []),
     Credentials({
       name: "credentials",
       credentials: {
@@ -30,10 +32,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // Enforced here (not only in the server action) because NextAuth's
         // /api/auth/callback/credentials endpoint calls authorize directly.
         const email = String(credentials.email).trim().toLowerCase();
-        const ip =
-          request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
-          request.headers.get("x-real-ip") ||
-          "unknown";
+        const ip = clientIpFrom(request.headers, env().TRUSTED_PROXY_HOPS);
         if (
           !rateLimit(`login:ip:${ip}`, 20, 15 * 60 * 1000) ||
           !rateLimit(`login:email:${email}`, 10, 15 * 60 * 1000)

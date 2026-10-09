@@ -14,7 +14,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "DevOps Tutor - Master DevOps, One Day at a Time",
+  title: {
+    default: "DevOps Tutor - Master DevOps, One Day at a Time",
+    template: "%s | DevOps Tutor",
+  },
   description:
     "A structured, gamified curriculum to master DevOps concepts, tools, and certifications.",
 };

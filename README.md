@@ -29,7 +29,7 @@ A structured, gamified learning platform that guides you through DevOps concepts
 
 | Tool    | Version |
 | ------- | ------- |
-| Node.js | 18+     |
+| Node.js | 20.9+ (22 recommended, see `.nvmrc`) |
 | Docker  | 20+     |
 | npm     | 9+      |
 
@@ -37,21 +37,21 @@ A structured, gamified learning platform that guides you through DevOps concepts
 
 ```bash
 # 1. Clone the repository
-git clone <repo-url>
-cd project
+git clone git@github.com:iwhozaifa/devops-tutor.git
+cd devops-tutor
 
-# 2. Install dependencies
+# 2. Install dependencies (also generates the Prisma client)
 npm install
 
 # 3. Set up environment variables
 cp .env.example .env
-# Edit .env with your database credentials if needed
+# Replace AUTH_SECRET with the output of: openssl rand -base64 32
 
 # 4. Start PostgreSQL via Docker
 docker compose up -d
 
-# 5. Generate Prisma client and run migrations
-npx prisma generate && npx prisma migrate dev
+# 5. Run migrations
+npm run db:migrate
 
 # 6. Seed the database with curriculum data
 npm run db:seed
@@ -66,7 +66,9 @@ To give an account access to the admin panel, register it and then run:
 npm run admin:promote -- you@example.com
 ```
 
-Run the unit tests with `npm test`.
+Before pushing, run the same checks CI runs: `npm run lint && npm run typecheck && npm test`.
+
+The server validates its environment at startup (`src/lib/env.ts`). If something is missing or still the placeholder, it exits with a message naming the variable.
 
 ### Dev server memory
 
@@ -81,44 +83,36 @@ Open [http://localhost:3000](http://localhost:3000) to view the app.
 ## Project Structure
 
 ```
-project/
+devops-tutor/
+├── .github/
+│   ├── workflows/ci.yml         # Lint, typecheck, test, audit, build against Postgres, Docker build
+│   ├── workflows/deploy.yml     # Build → ECR → deploy to EC2 via SSM
+│   └── dependabot.yml
+├── deploy/                      # Runs on the EC2 host (compose file, SSM env fetch, deploy + rollback)
+├── docs/
+│   ├── DEPLOYMENT.md            # AWS setup and operations runbook
+│   └── PROJECT_REPORT.md
 ├── prisma/
 │   ├── schema.prisma            # Database schema
-│   └── seed/
-│       ├── index.ts             # Seed entry point
-│       └── subjects/
-│           └── devops/
-│               ├── subject.json
-│               ├── certifications.json
-│               ├── modules/
-│               │   ├── 01-linux-fundamentals/
-│               │   │   ├── module.json
-│               │   │   └── day-01.json … day-07.json
-│               │   └── 02-version-control-git/
-│               │       ├── module.json
-│               │       └── day-08.json … day-14.json
-│               ├── exams/
-│               │   └── cka-practice-1.json
-│               └── projects/
-│                   ├── ci-cd-pipeline.json
-│                   └── linux-server-setup.json
+│   ├── migrations/              # Versioned SQL migrations
+│   └── seed/                    # Curriculum data (JSON) and the seed script
+├── scripts/
+│   ├── dev.sh                   # Memory-capped `next dev`
+│   └── promote-admin.ts         # Grant or revoke the admin role
 ├── src/
 │   ├── app/
 │   │   ├── (app)/               # Authenticated app routes
-│   │   │   ├── dashboard/
-│   │   │   ├── leaderboard/
-│   │   │   ├── profile/
-│   │   │   └── subjects/
+│   │   ├── (admin)/             # Admin panel (role-gated)
 │   │   ├── (auth)/              # Login & register
-│   │   ├── api/                 # API route handlers
-│   │   ├── layout.tsx           # Root layout
-│   │   └── page.tsx             # Landing page
-│   └── lib/                     # Shared utilities (db, auth, etc.)
-├── docker-compose.yml
-├── next.config.ts
-├── tailwind.config.ts
-├── tsconfig.json
-└── package.json
+│   │   ├── api/                 # Route handlers, including /api/health
+│   │   ├── error.tsx, not-found.tsx, global-error.tsx
+│   │   └── robots.ts, sitemap.ts
+│   ├── components/
+│   ├── instrumentation.ts       # Startup env validation, server error logging
+│   └── lib/                     # db, auth, env, logger, rate limiting, validation, gamification
+├── Dockerfile                   # runner and migrate targets
+├── docker-compose.yml           # Local PostgreSQL only
+└── next.config.ts               # Standalone output, security headers
 ```
 
 ---
@@ -151,9 +145,10 @@ No code changes are needed. The entire curriculum is data-driven:
 | PostgreSQL        | Relational database                        |
 | Prisma 7          | Type-safe ORM and migrations               |
 | NextAuth.js v5    | Authentication (credentials + adapters)    |
-| TanStack Query    | Client-side data fetching and caching      |
 | Zod               | Runtime schema validation                  |
-| Docker Compose    | Local PostgreSQL container                 |
+| Vitest            | Unit tests                                 |
+| Docker            | Local PostgreSQL; production image         |
+| AWS               | EC2, RDS, ALB, ECR, SSM, CloudWatch        |
 | Lucide React      | Icon library                               |
 | next-themes       | Dark / light theme switching               |
 
@@ -161,15 +156,28 @@ No code changes are needed. The entire curriculum is data-driven:
 
 ## Scripts
 
-| Command             | Description                                  |
-| ------------------- | -------------------------------------------- |
-| `npm run dev`       | Start development server (Turbopack)         |
-| `npm run build`     | Create production build                      |
-| `npm start`         | Start production server                      |
-| `npm run lint`      | Run ESLint                                   |
-| `npm run db:seed`   | Seed the database from JSON curriculum files |
-| `npm run db:migrate`| Run Prisma migrations                        |
-| `npm run db:studio` | Open Prisma Studio (database GUI)            |
+| Command                 | Description                                         |
+| ----------------------- | --------------------------------------------------- |
+| `npm run dev`           | Development server (Turbopack, memory-capped)       |
+| `npm run dev:uncapped`  | Plain `next dev`                                    |
+| `npm run build`         | Production build (standalone output)                |
+| `npm start`             | Start the production build                          |
+| `npm run lint`          | ESLint, fails on warnings                           |
+| `npm run typecheck`     | TypeScript without emitting                         |
+| `npm test`              | Unit tests (Vitest)                                 |
+| `npm run db:migrate`    | Create/apply migrations in development              |
+| `npm run db:deploy`     | Apply pending migrations (CI, production)           |
+| `npm run db:seed`       | Seed the database from the JSON curriculum files    |
+| `npm run db:studio`     | Prisma Studio (database GUI)                        |
+| `npm run admin:promote` | `-- <email> [--demote]` grant or revoke admin       |
+
+---
+
+## Deployment
+
+Production runs on AWS: a Docker container on EC2 behind an Application Load Balancer, with RDS PostgreSQL, secrets in SSM Parameter Store and logs in CloudWatch. Pushes to `main` run CI, then build and deploy automatically. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for the one-time AWS setup, first deploy, rollback and log queries.
+
+Health checks: `GET /api/health` (liveness) and `GET /api/health?ready=1` (checks the database; used by the ALB).
 
 ---
 
@@ -179,7 +187,7 @@ Contributions are welcome! To get started:
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/my-feature`)
-3. Make your changes and ensure `npm run lint` passes
+3. Make your changes and ensure `npm run lint`, `npm run typecheck` and `npm test` pass
 4. Commit with a clear message describing the change
 5. Push to your fork and open a Pull Request
 

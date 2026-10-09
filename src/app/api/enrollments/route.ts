@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { logger } from "@/lib/logger";
 import { enrollmentSchema, parseBody } from "@/lib/validation";
 
 export async function POST(request: NextRequest) {
@@ -43,7 +44,8 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(enrollment, { status: 201 });
-  } catch {
+  } catch (err) {
+    logger.error("failed to enroll", { route: "/api/enrollments", err });
     return NextResponse.json(
       { error: "Failed to enroll" },
       { status: 500 }

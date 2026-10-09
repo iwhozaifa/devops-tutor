@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useEffectEvent } from "react";
 import { Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -17,31 +17,27 @@ export function ExamTimer({
 }: ExamTimerProps) {
   const totalSeconds = timeLimitMinutes * 60;
   const [remaining, setRemaining] = useState(totalSeconds);
-  const startTimeRef = useRef(Date.now());
-  const onTimeUpRef = useRef(onTimeUp);
-  const onTickRef = useRef(onTick);
-
-  onTimeUpRef.current = onTimeUp;
-  onTickRef.current = onTick;
+  const [startTime] = useState(() => Date.now());
+  const tick = useEffectEvent((elapsed: number, timeUp: boolean) => {
+    onTick?.(elapsed);
+    if (timeUp) onTimeUp();
+  });
 
   const isWarning = remaining <= 300; // 5 minutes
   const isCritical = remaining <= 60; // 1 minute
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
       const newRemaining = Math.max(0, totalSeconds - elapsed);
       setRemaining(newRemaining);
-      onTickRef.current?.(elapsed);
 
-      if (newRemaining <= 0) {
-        clearInterval(interval);
-        onTimeUpRef.current();
-      }
+      if (newRemaining <= 0) clearInterval(interval);
+      tick(elapsed, newRemaining <= 0);
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [totalSeconds]);
+  }, [totalSeconds, startTime]);
 
   const minutes = Math.floor(remaining / 60);
   const seconds = remaining % 60;

@@ -1,5 +1,8 @@
+import type { Metadata } from "next";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/admin";
+
+export const metadata: Metadata = { title: "Analytics · Admin" };
 
 export default async function AdminAnalyticsPage() {
   await requireAdmin();

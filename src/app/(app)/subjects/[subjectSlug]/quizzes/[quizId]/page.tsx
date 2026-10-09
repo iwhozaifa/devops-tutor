@@ -48,7 +48,7 @@ export default async function QuizPage({ params }: QuizPageProps) {
   });
 
   const subject = quiz.day.module.subject;
-  const module = quiz.day.module;
+  const quizModule = quiz.day.module;
   const day = quiz.day;
 
   // Prepare quiz data for client (strip isCorrect from options)
@@ -81,7 +81,7 @@ export default async function QuizPage({ params }: QuizPageProps) {
           {subject.title}
         </Link>
         <span>/</span>
-        <span>{module.title}</span>
+        <span>{quizModule.title}</span>
         <span>/</span>
         <Link
           href={`/subjects/${subjectSlug}/curriculum/${day.dayNumber}`}
