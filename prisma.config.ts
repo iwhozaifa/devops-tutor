@@ -9,6 +9,9 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    // The migration engine and node-postgres read TLS options from the URL
+    // differently (see docs/DEPLOYMENT.md), so production can give the CLI
+    // its own URL. Locally both are the same.
+    url: process.env["MIGRATE_DATABASE_URL"] ?? process.env["DATABASE_URL"],
   },
 });

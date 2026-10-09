@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { logger } from "@/lib/logger";
 import { awardXp, recordStreakActivity } from "@/lib/gamification";
 import { dayProgressSchema, parseBody } from "@/lib/validation";
 
@@ -57,7 +58,8 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(progress);
-  } catch {
+  } catch (err) {
+    logger.error("failed to update progress", { route: "/api/progress/day", err });
     return NextResponse.json(
       { error: "Failed to update progress" },
       { status: 500 }

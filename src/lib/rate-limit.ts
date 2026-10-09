@@ -1,7 +1,8 @@
 import { headers } from "next/headers";
+import { env } from "./env";
 
-// Fixed-window, in-memory limiter. Per-process only: behind multiple
-// instances, also rate limit at the reverse proxy.
+// Fixed-window, in-memory limiter. Per-process only: before running more than
+// one app instance, move the buckets to Postgres or Redis.
 const buckets = new Map<string, { count: number; resetAt: number }>();
 
 export function rateLimit(key: string, limit: number, windowMs: number): boolean {
@@ -20,7 +21,19 @@ export function rateLimit(key: string, limit: number, windowMs: number): boolean
   return bucket.count <= limit;
 }
 
+// Each proxy appends the address it received the request from, so only the
+// last `trustedHops` entries of X-Forwarded-For are trustworthy; anything to
+// their left was supplied by the client. Without a proxy, Next.js sets the
+// header to the socket address when the client did not send one.
+export function clientIpFrom(h: Headers, trustedHops: number): string {
+  const hops = (h.get("x-forwarded-for") ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (hops.length === 0) return "unknown";
+  return hops[Math.max(0, hops.length - trustedHops)];
+}
+
 export async function clientIp(): Promise<string> {
-  const h = await headers();
-  return h.get("x-forwarded-for")?.split(",")[0].trim() || h.get("x-real-ip") || "unknown";
+  return clientIpFrom(await headers(), env().TRUSTED_PROXY_HOPS);
 }
