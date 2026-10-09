@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 
 export const PASSWORD = "e2e-password-123";
@@ -31,4 +31,15 @@ export async function makeAdmin(email: string) {
   await client.connect();
   await client.query(`UPDATE "User" SET role = 'ADMIN' WHERE email = $1`, [email]);
   await client.end();
+}
+
+/**
+ * Clicks an Enroll button and waits until the enrollment is saved, so a
+ * navigation right after cannot cancel the request.
+ */
+export async function enrollVia(page: Page, button: Locator) {
+  await Promise.all([
+    page.waitForResponse((r) => r.url().endsWith("/api/enrollments") && r.request().method() === "POST" && r.ok()),
+    button.click(),
+  ]);
 }
