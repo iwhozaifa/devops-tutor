@@ -6,7 +6,7 @@
 - **bcrypt hashing** with cost factor 12 — passwords are never stored in plain text
 - Password length 8–72 bytes enforced at registration (bcrypt ignores bytes past 72)
 - Emails are trimmed, lowercased and matched case-insensitively
-- Login attempts are rate limited per IP and per email inside the `authorize` callback (also covers `/api/auth/callback/credentials`); registration is rate limited per IP. The client IP is the last `TRUSTED_PROXY_HOPS` entry of `X-Forwarded-For` (the address the ALB appended), never the client-controlled leftmost entry, so the per-IP limit cannot be bypassed by sending a fake header. The limiter is in-memory and per process; move it to Postgres or Redis before running more than one instance
+- Login attempts are rate limited per IP and per email inside the `authorize` callback (also covers `/api/auth/callback/credentials`); registration is rate limited per IP. The client IP is the last `TRUSTED_PROXY_HOPS` entry of `X-Forwarded-For` (the address the ALB appended), never the client-controlled leftmost entry, so the per-IP limit cannot be bypassed by sending a fake header. Counters live in a Postgres `UNLOGGED` table updated with one atomic upsert per attempt, so limits hold across every app instance (`src/lib/rate-limit.ts`)
 - Credentials validated server-side via Auth.js `authorize` callback — no client-side password comparison
 
 ### Session Management

@@ -1,39 +1,36 @@
-import { headers } from "next/headers";
-import { env } from "./env";
+import type { PrismaClient } from "@/generated/prisma/client";
+import { db } from "./db";
 
-// Fixed-window, in-memory limiter. Per-process only: before running more than
-// one app instance, move the buckets to Postgres or Redis.
-const buckets = new Map<string, { count: number; resetAt: number }>();
+// Fixed-window counters in Postgres, shared by every app instance. One
+// atomic upsert per call: it starts a new window when the old one has ended,
+// otherwise increments, and returns the count after this request.
+export async function rateLimit(
+  key: string,
+  limit: number,
+  windowMs: number,
+  client: PrismaClient = db
+): Promise<boolean> {
+  // The clock comes from the app (not now() in SQL) so windows are testable
+  const now = new Date();
+  const resetAt = new Date(now.getTime() + windowMs);
 
-export function rateLimit(key: string, limit: number, windowMs: number): boolean {
-  const now = Date.now();
-  const bucket = buckets.get(key);
+  const [row] = await client.$queryRaw<{ count: number }[]>`
+    INSERT INTO "RateLimitBucket" ("key", "count", "resetAt")
+    VALUES (${key}, 1, ${resetAt})
+    ON CONFLICT ("key") DO UPDATE SET
+      "count"   = CASE WHEN "RateLimitBucket"."resetAt" <= ${now} THEN 1
+                       ELSE "RateLimitBucket"."count" + 1 END,
+      "resetAt" = CASE WHEN "RateLimitBucket"."resetAt" <= ${now} THEN EXCLUDED."resetAt"
+                       ELSE "RateLimitBucket"."resetAt" END
+    RETURNING "count"`;
 
-  if (!bucket || bucket.resetAt <= now) {
-    if (buckets.size > 10_000) {
-      for (const [k, b] of buckets) if (b.resetAt <= now) buckets.delete(k);
-    }
-    buckets.set(key, { count: 1, resetAt: now + windowMs });
-    return true;
-  }
+  // Occasionally clear out finished windows so the table stays small
+  if (Math.random() < 0.01) void pruneRateLimits(client).catch(() => {});
 
-  bucket.count++;
-  return bucket.count <= limit;
+  return row.count <= limit;
 }
 
-// Each proxy appends the address it received the request from, so only the
-// last `trustedHops` entries of X-Forwarded-For are trustworthy; anything to
-// their left was supplied by the client. Without a proxy, Next.js sets the
-// header to the socket address when the client did not send one.
-export function clientIpFrom(h: Headers, trustedHops: number): string {
-  const hops = (h.get("x-forwarded-for") ?? "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-  if (hops.length === 0) return "unknown";
-  return hops[Math.max(0, hops.length - trustedHops)];
-}
-
-export async function clientIp(): Promise<string> {
-  return clientIpFrom(await headers(), env().TRUSTED_PROXY_HOPS);
+/** Deletes buckets whose window has ended; returns how many were removed. */
+export async function pruneRateLimits(client: PrismaClient = db): Promise<number> {
+  return client.$executeRaw`DELETE FROM "RateLimitBucket" WHERE "resetAt" <= ${new Date()}`;
 }
