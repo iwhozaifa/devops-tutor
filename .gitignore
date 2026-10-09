@@ -51,6 +51,7 @@ next-env.d.ts
 
 # local email outbox (MAIL_TRANSPORT=file)
 /.mail-outbox/
+/.mail-outbox-test/
 
 # terraform
 .terraform/

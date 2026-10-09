@@ -37,6 +37,9 @@ export default defineConfig({
             DATABASE_URL: process.env.TEST_DATABASE_URL ?? "",
             DB_POOL_MAX: "2",
             AUTH_SECRET: "integration-tests-only-secret-0123456789",
+            MAIL_TRANSPORT: "file",
+            MAIL_FILE_DIR: ".mail-outbox-test",
+            AUTH_URL: "http://localhost:3000",
           },
           // One database, so test files run one at a time
           fileParallelism: false,

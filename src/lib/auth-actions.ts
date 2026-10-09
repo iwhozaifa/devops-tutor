@@ -1,7 +1,9 @@
 "use server";
 
 import { AuthError, CredentialsSignin } from "next-auth";
-import { signIn, signOut } from "./auth";
+import { auth, signIn, signOut } from "./auth";
+import { sendVerificationEmail } from "./account-emails";
+import { logger } from "./logger";
 import { db } from "./db";
 import bcrypt from "bcryptjs";
 import { clientIp } from "./client-ip";
@@ -35,9 +37,16 @@ export async function registerUser(formData: FormData) {
 
   const passwordHash = await bcrypt.hash(password, 12);
 
-  await db.user.create({
+  const user = await db.user.create({
     data: { name, email, passwordHash },
   });
+
+  // A failed send must not block registration; the banner offers a resend
+  try {
+    await sendVerificationEmail(user);
+  } catch (err) {
+    logger.error("verification email failed", { userId: user.id, err });
+  }
 
   await signIn("credentials", { email, password, redirectTo: "/dashboard" });
 }
@@ -68,4 +77,23 @@ export async function loginUser(formData: FormData) {
 
 export async function logoutUser() {
   await signOut({ redirectTo: "/" });
+}
+
+export async function resendVerificationEmail(): Promise<
+  { ok: true; alreadyVerified?: true } | { error: string }
+> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Not signed in" };
+
+  const user = await db.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true, email: true, name: true, emailVerified: true },
+  });
+  if (!user) return { error: "Not signed in" };
+  if (user.emailVerified) return { ok: true, alreadyVerified: true };
+
+  if (!(await rateLimit(`verify-resend:${user.id}`, 3, 60 * 60 * 1000))) return TOO_MANY;
+
+  await sendVerificationEmail(user);
+  return { ok: true };
 }

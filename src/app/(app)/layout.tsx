@@ -4,6 +4,8 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { GamificationProvider } from "@/components/gamification/GamificationProvider";
 import { getTotalXp, getUserStreak, xpProgress } from "@/lib/gamification";
+import { db } from "@/lib/db";
+import { VerifyEmailBanner } from "@/components/VerifyEmailBanner";
 
 export default async function AppLayout({
   children,
@@ -17,9 +19,10 @@ export default async function AppLayout({
   }
 
   const userId = session.user.id!;
-  const [totalXp, streak] = await Promise.all([
+  const [totalXp, streak, account] = await Promise.all([
     getTotalXp(userId),
     getUserStreak(userId),
+    db.user.findUnique({ where: { id: userId }, select: { email: true, emailVerified: true } }),
   ]);
 
   const progress = xpProgress(totalXp);
@@ -44,6 +47,11 @@ export default async function AppLayout({
 
         <main className="flex-1 overflow-y-auto">
           <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
+            {account && !account.emailVerified && (
+              <div className="mb-6">
+                <VerifyEmailBanner email={account.email} />
+              </div>
+            )}
             {children}
           </div>
         </main>
