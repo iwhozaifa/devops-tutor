@@ -74,6 +74,7 @@ Create two repositories: `devops-tutor` and `devops-tutor-migrate`. Add a lifecy
 - `AmazonEC2ContainerRegistryReadOnly`
 - `ssm:GetParametersByPath` on `arn:aws:ssm:<region>:<account>:parameter/devops-tutor/prod*`, plus `kms:Decrypt` on the key used for the SecureStrings
 - `logs:CreateLogGroup`, `logs:CreateLogStream`, `logs:PutLogEvents` on `/devops-tutor/*`
+- `ses:SendEmail` on the SES domain identity (verification and password reset emails)
 
 ### 5. Load balancer
 
@@ -84,7 +85,13 @@ Create two repositories: `devops-tutor` and `devops-tutor-migrate`. Add a lifecy
   - Health check path: `/api/health/ready`
   - Healthy threshold 2, interval 15s
 
-### 6. Parameters (SSM Parameter Store, SecureString)
+### 6. Email (SES)
+
+- Verify your domain in SES (DKIM CNAMEs in DNS) and set up a custom MAIL FROM domain.
+- Request production access for the account. New SES accounts are in the sandbox and can only send to verified addresses.
+- Configure bounce and complaint handling (an SNS topic or a configuration set) before you open registration.
+
+### 7. Parameters (SSM Parameter Store, SecureString)
 
 Under `/devops-tutor/prod/`. Each parameter name becomes an environment variable.
 
@@ -99,6 +106,9 @@ Under `/devops-tutor/prod/`. Each parameter name becomes an environment variable
 | `TRUSTED_PROXY_HOPS` | `1` (just the ALB; add one per extra proxy, such as CloudFront) |
 | `DB_POOL_MAX` | `10` |
 | `LOG_LEVEL` | `info` |
+| `MAIL_TRANSPORT` | `ses` (required in production) |
+| `MAIL_FROM` | `DevOps Tutor <no-reply@your-domain>`, an address on the verified SES domain |
+| `AWS_REGION` | the SES region, normally the same as the rest of the stack |
 
 **Why there are two URLs:**
 - The app connects through node-postgres. It reads `sslmode=verify-full` and verifies RDS against the CA bundle in the image (`NODE_EXTRA_CA_CERTS`).
@@ -107,7 +117,7 @@ Under `/devops-tutor/prod/`. Each parameter name becomes an environment variable
 After the first deploy, confirm the migrate URL with:
 `docker compose -f /opt/devops-tutor/docker-compose.prod.yml run --rm migrate ./node_modules/.bin/prisma migrate status`
 
-### 7. GitHub → AWS (OIDC)
+### 8. GitHub → AWS (OIDC)
 
 1. Add the IAM OIDC identity provider `token.actions.githubusercontent.com` (audience `sts.amazonaws.com`).
 2. Create a role trusted by it, restricted with the condition `token.actions.githubusercontent.com:sub = repo:<owner>/devops-tutor:environment:production`.

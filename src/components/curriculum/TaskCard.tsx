@@ -30,6 +30,8 @@ interface TaskCardProps {
     notes: string | null;
     submittedAt: string | Date;
   } | null;
+  /** False when the learner is not enrolled; hides the submit controls */
+  canSubmit?: boolean;
 }
 
 const difficultyConfig = {
@@ -63,7 +65,7 @@ function renderDescription(text: string) {
   });
 }
 
-export function TaskCard({ task, submission: initialSubmission }: TaskCardProps) {
+export function TaskCard({ task, submission: initialSubmission, canSubmit = true }: TaskCardProps) {
   const [submission, setSubmission] = useState(initialSubmission ?? null);
   const [hintsRevealed, setHintsRevealed] = useState(0);
   const [hintsOpen, setHintsOpen] = useState(false);
@@ -193,7 +195,7 @@ export function TaskCard({ task, submission: initialSubmission }: TaskCardProps)
       )}
 
       {/* Submission */}
-      {!submission ? (
+      {!canSubmit && !submission ? null : !submission ? (
         <div className="border-t p-5 space-y-3">
           <textarea
             value={notes}

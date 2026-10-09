@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/admin";
+import { recordAdminAction } from "@/lib/audit";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -14,11 +15,18 @@ interface Props {
 }
 
 export default async function AdminUsersPage({ searchParams }: Props) {
-  await requireAdmin();
+  const admin = await requireAdmin();
 
   const params = await searchParams;
   const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
   const query = (params.q ?? "").slice(0, 100);
+
+  // Viewing learner data is itself an auditable admin action
+  await recordAdminAction({
+    actor: { id: admin.id, label: admin.email },
+    action: "USER_LIST_VIEWED",
+    metadata: { query, page },
+  });
 
   const where = query
     ? {

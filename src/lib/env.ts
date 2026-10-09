@@ -22,6 +22,11 @@ const schema = z
     DB_POOL_MAX: z.coerce.number().int().min(1).max(100).default(10),
     LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
     APP_VERSION: z.string().default("dev"),
+    // ses in production; file for E2E tests; log (development only) prints links
+    MAIL_TRANSPORT: z.enum(["ses", "file", "log"]).optional(),
+    MAIL_FROM: z.string().min(3).optional(),
+    MAIL_FILE_DIR: z.string().default(".mail-outbox"),
+    AWS_REGION: z.string().min(1).optional(),
   })
   .superRefine((env, ctx) => {
     if (env.NODE_ENV === "production" && !env.AUTH_URL) {
@@ -30,6 +35,17 @@ const schema = z
         path: ["AUTH_URL"],
         message: "is required in production (the public https:// origin)",
       });
+    }
+    if (env.NODE_ENV === "production" && (env.MAIL_TRANSPORT ?? "log") === "log") {
+      ctx.addIssue({
+        code: "custom",
+        path: ["MAIL_TRANSPORT"],
+        message: "must be ses in production (log would write account links to the logs)",
+      });
+    }
+    if (env.MAIL_TRANSPORT === "ses") {
+      if (!env.MAIL_FROM) ctx.addIssue({ code: "custom", path: ["MAIL_FROM"], message: "is required for SES" });
+      if (!env.AWS_REGION) ctx.addIssue({ code: "custom", path: ["AWS_REGION"], message: "is required for SES" });
     }
     if (!env.AUTH_GITHUB_ID !== !env.AUTH_GITHUB_SECRET) {
       ctx.addIssue({
@@ -40,7 +56,7 @@ const schema = z
     }
   });
 
-export type Env = z.infer<typeof schema>;
+export type Env = z.infer<typeof schema> & { MAIL_TRANSPORT: "ses" | "file" | "log" };
 
 export function parseEnv(source: Record<string, string | undefined>): Env {
   // Treat empty strings as unset so `FOO=` in an env file falls back to the default
@@ -54,7 +70,7 @@ export function parseEnv(source: Record<string, string | undefined>): Env {
     );
     throw new Error(`Invalid environment configuration:\n${lines.join("\n")}`);
   }
-  return result.data;
+  return { ...result.data, MAIL_TRANSPORT: result.data.MAIL_TRANSPORT ?? "log" };
 }
 
 let cached: Env | undefined;
