@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 // Every table except Prisma's migration history. Listed explicitly (rather
 // than read from the catalog) so a new table is a conscious addition here.
 const TABLES = [
+  "RateLimitBucket",
   "XpLedger",
   "UserBadge",
   "Badge",
