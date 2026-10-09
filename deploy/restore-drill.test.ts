@@ -33,10 +33,12 @@ function drill(env: Record<string, string> = {}, args: string[] = []) {
       encoding: "utf8",
       stdio: "pipe",
       env: {
+        NODE_ENV: "test",
         PATH: `${dir}:${process.env.PATH}`,
         FAKE_LOG: log,
         DB_INSTANCE: "devops-tutor",
         EC2_INSTANCE_ID: "i-0123456789abcdef0",
+        DB_SECURITY_GROUP_ID: "sg-0db",
         MIGRATE_IMAGE_REPO: "123456789012.dkr.ecr.eu-west-1.amazonaws.com/devops-tutor-migrate",
         AWS_REGION: "eu-west-1",
         POLL_SECONDS: "0",
@@ -73,6 +75,7 @@ describe("restore drill", () => {
     expect(restore).toMatch(/--db-instance-identifier devops-tutor-drill-\d{8}-\d{6}/);
     expect(restore).toContain("--no-publicly-accessible");
     expect(restore).toContain("--no-multi-az");
+    expect(restore).toContain("--vpc-security-group-ids sg-0db");
     expect(calls[4]).toContain("--instance-ids i-0123456789abcdef0");
     expect(calls[7]).toContain("--skip-final-snapshot");
     expect(calls[7]).toMatch(/--db-instance-identifier devops-tutor-drill-/);

@@ -144,6 +144,27 @@ The deploy job is skipped until `EC2_INSTANCE_ID` is set.
   ```
 - **Secrets rotation:** update the SSM parameter and redeploy (`deploy.sh` re-reads SSM). Rotating `AUTH_SECRET` signs everyone out.
 
+## Backups and restore
+
+RDS takes automated daily snapshots (14 days, set in `infra/terraform/variables.tf`) and keeps a final snapshot if the instance is ever deleted.
+
+**Monthly restore drill.** `.github/workflows/restore-drill.yml` runs on the 3rd of each month, and on demand from the Actions tab. It runs `deploy/restore-drill.sh`, which:
+1. restores the newest automated snapshot to a temporary private instance `devops-tutor-drill-<timestamp>`
+2. runs `scripts/restore-check.ts` against it from the app instance: every migration must be applied, and the User, Subject, Module and Day tables must hold data
+3. deletes the temporary instance, even when a step fails
+
+A failed run means the backups cannot currently be trusted; investigate before the next deploy. To see what a run would do without changing anything: `deploy/restore-drill.sh --dry-run`.
+
+**Restoring production for real** (data loss or corruption):
+1. Pick a snapshot, or a point in time within the retention window: `aws rds describe-db-snapshots --db-instance-identifier devops-tutor`.
+2. Restore it to a new instance, `devops-tutor-restored`, with the same subnet group, security group and parameter group. Either restore the snapshot (`restore-db-instance-from-db-snapshot`) or a point in time (`restore-db-instance-to-point-in-time`).
+3. Check it: `DATABASE_URL=<url with the new host> npx tsx scripts/restore-check.ts`, run from the instance with the migrate image, as the drill does.
+4. Point the app at it: update the host in the `DATABASE_URL` and `MIGRATE_DATABASE_URL` SSM parameters, then redeploy the current tag with `deploy.sh`, which re-reads SSM.
+5. Once it's healthy, bring Terraform in line:
+   - either rename the instances so `devops-tutor` is the restored one
+   - or `terraform import` the new instance and remove the old one from state
+   - keep the old instance stopped until you are sure
+
 ## Scaling beyond one instance
 
 Rate-limit counters are already shared through Postgres, so more instances need no app changes. Before you put the app in an Auto Scaling group with more than one instance:
