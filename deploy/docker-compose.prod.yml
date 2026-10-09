@@ -1,0 +1,43 @@
+# Runs on the EC2 host. The database is RDS; secrets come from SSM Parameter
+# Store via fetch-env.sh. Driven by deploy.sh, which sets these variables:
+#   IMAGE_REPO  <account>.dkr.ecr.<region>.amazonaws.com/devops-tutor
+#   IMAGE_TAG   git commit SHA built by CI
+#   AWS_REGION  region of the CloudWatch log group
+name: devops-tutor
+
+x-logging: &logging
+  driver: awslogs
+  options:
+    awslogs-region: ${AWS_REGION}
+    awslogs-group: /devops-tutor/app
+    awslogs-create-group: "true"
+    tag: "{{.Name}}"
+
+services:
+  app:
+    image: ${IMAGE_REPO}:${IMAGE_TAG}
+    env_file: /etc/devops-tutor/app.env
+    environment:
+      # Leave headroom under mem_limit for non-heap memory
+      NODE_OPTIONS: --max-old-space-size=${APP_HEAP_MB:-768}
+    # Only the ALB reaches this port (security group rule on 3000)
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    mem_limit: ${APP_MEM_LIMIT:-1g}
+    # Next.js finishes in-flight requests on SIGTERM before exiting
+    stop_grace_period: 30s
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /app/.next/cache
+    security_opt:
+      - no-new-privileges:true
+    logging: *logging
+
+  migrate:
+    image: ${IMAGE_REPO}-migrate:${IMAGE_TAG}
+    env_file: /etc/devops-tutor/app.env
+    profiles: [migrate]
+    restart: "no"
+    logging: *logging

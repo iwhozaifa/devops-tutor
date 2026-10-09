@@ -1,0 +1,17 @@
+# Keep secrets, local state and build output out of the build context
+.env
+.env.*
+!.env.example
+.git
+.github
+.next
+node_modules
+src/generated
+coverage
+docs
+*.md
+!README.md
+tsconfig.tsbuildinfo
+.claude
+docker-compose.yml
+Dockerfile

@@ -20,6 +20,10 @@ const csp = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
+  // Self-contained server in .next/standalone for the Docker image
+  output: "standalone",
+  poweredByHeader: false,
+
   // Fix warning about multiple lockfiles by setting turbopack root
   turbopack: {
     root: __dirname,
@@ -32,10 +36,15 @@ const nextConfig: NextConfig = {
         source: "/(.*)",
         headers: [
           { key: "Content-Security-Policy", value: csp },
-          {
-            key: "Strict-Transport-Security",
-            value: "max-age=63072000; includeSubDomains",
-          },
+          // Not in dev, so the browser does not pin localhost to https
+          ...(isDev
+            ? []
+            : [
+                {
+                  key: "Strict-Transport-Security",
+                  value: "max-age=63072000; includeSubDomains",
+                },
+              ]),
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "X-Frame-Options", value: "DENY" },
           {
