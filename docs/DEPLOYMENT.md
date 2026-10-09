@@ -74,6 +74,7 @@ Create two repositories: `devops-tutor` and `devops-tutor-migrate`. Add a lifecy
 - `AmazonEC2ContainerRegistryReadOnly`
 - `ssm:GetParametersByPath` on `arn:aws:ssm:<region>:<account>:parameter/devops-tutor/prod*`, plus `kms:Decrypt` on the key used for the SecureStrings
 - `logs:CreateLogGroup`, `logs:CreateLogStream`, `logs:PutLogEvents` on `/devops-tutor/*`
+- `ses:SendEmail` on the SES domain identity (verification and password reset emails)
 
 ### 5. Load balancer
 
@@ -84,7 +85,13 @@ Create two repositories: `devops-tutor` and `devops-tutor-migrate`. Add a lifecy
   - Health check path: `/api/health/ready`
   - Healthy threshold 2, interval 15s
 
-### 6. Parameters (SSM Parameter Store, SecureString)
+### 6. Email (SES)
+
+- Verify your domain in SES (DKIM CNAMEs in DNS) and set up a custom MAIL FROM domain.
+- Request production access for the account. New SES accounts are in the sandbox and can only send to verified addresses.
+- Configure bounce and complaint handling (an SNS topic or a configuration set) before you open registration.
+
+### 7. Parameters (SSM Parameter Store, SecureString)
 
 Under `/devops-tutor/prod/`. Each parameter name becomes an environment variable.
 
@@ -99,6 +106,9 @@ Under `/devops-tutor/prod/`. Each parameter name becomes an environment variable
 | `TRUSTED_PROXY_HOPS` | `1` (just the ALB; add one per extra proxy, such as CloudFront) |
 | `DB_POOL_MAX` | `10` |
 | `LOG_LEVEL` | `info` |
+| `MAIL_TRANSPORT` | `ses` (required in production) |
+| `MAIL_FROM` | `DevOps Tutor <no-reply@your-domain>`, an address on the verified SES domain |
+| `AWS_REGION` | the SES region, normally the same as the rest of the stack |
 
 **Why there are two URLs:**
 - The app connects through node-postgres. It reads `sslmode=verify-full` and verifies RDS against the CA bundle in the image (`NODE_EXTRA_CA_CERTS`).
@@ -107,7 +117,7 @@ Under `/devops-tutor/prod/`. Each parameter name becomes an environment variable
 After the first deploy, confirm the migrate URL with:
 `docker compose -f /opt/devops-tutor/docker-compose.prod.yml run --rm migrate ./node_modules/.bin/prisma migrate status`
 
-### 7. GitHub → AWS (OIDC)
+### 8. GitHub → AWS (OIDC)
 
 1. Add the IAM OIDC identity provider `token.actions.githubusercontent.com` (audience `sts.amazonaws.com`).
 2. Create a role trusted by it, restricted with the condition `token.actions.githubusercontent.com:sub = repo:<owner>/devops-tutor:environment:production`.
@@ -143,6 +153,27 @@ The deploy job is skipped until `EC2_INSTANCE_ID` is set.
   fields @timestamp, level, msg, route, err.message | filter level = "error" | sort @timestamp desc
   ```
 - **Secrets rotation:** update the SSM parameter and redeploy (`deploy.sh` re-reads SSM). Rotating `AUTH_SECRET` signs everyone out.
+
+## Backups and restore
+
+RDS takes automated daily snapshots (14 days, set in `infra/terraform/variables.tf`) and keeps a final snapshot if the instance is ever deleted.
+
+**Monthly restore drill.** `.github/workflows/restore-drill.yml` runs on the 3rd of each month, and on demand from the Actions tab. It runs `deploy/restore-drill.sh`, which:
+1. restores the newest automated snapshot to a temporary private instance `devops-tutor-drill-<timestamp>`
+2. runs `scripts/restore-check.ts` against it from the app instance: every migration must be applied, and the User, Subject, Module and Day tables must hold data
+3. deletes the temporary instance, even when a step fails
+
+A failed run means the backups cannot currently be trusted; investigate before the next deploy. To see what a run would do without changing anything: `deploy/restore-drill.sh --dry-run`.
+
+**Restoring production for real** (data loss or corruption):
+1. Pick a snapshot, or a point in time within the retention window: `aws rds describe-db-snapshots --db-instance-identifier devops-tutor`.
+2. Restore it to a new instance, `devops-tutor-restored`, with the same subnet group, security group and parameter group. Either restore the snapshot (`restore-db-instance-from-db-snapshot`) or a point in time (`restore-db-instance-to-point-in-time`).
+3. Check it: `DATABASE_URL=<url with the new host> npx tsx scripts/restore-check.ts`, run from the instance with the migrate image, as the drill does.
+4. Point the app at it: update the host in the `DATABASE_URL` and `MIGRATE_DATABASE_URL` SSM parameters, then redeploy the current tag with `deploy.sh`, which re-reads SSM.
+5. Once it's healthy, bring Terraform in line:
+   - either rename the instances so `devops-tutor` is the restored one
+   - or `terraform import` the new instance and remove the old one from state
+   - keep the old instance stopped until you are sure
 
 ## Scaling beyond one instance
 

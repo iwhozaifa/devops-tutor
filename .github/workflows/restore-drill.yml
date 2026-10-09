@@ -1,0 +1,43 @@
+name: Restore drill
+
+# Monthly proof that backups restore: the latest automated RDS snapshot is
+# restored to a temporary instance, checked with scripts/restore-check.ts on
+# the app instance, and deleted. Repository variables (from Terraform's
+# github_repository_variables output): AWS_REGION, AWS_RESTORE_ROLE_ARN,
+# MIGRATE_IMAGE_REPO, EC2_INSTANCE_ID, DB_INSTANCE, DB_SECURITY_GROUP_ID.
+
+on:
+  schedule:
+    - cron: "0 6 3 * *" # 06:00 UTC on the 3rd of each month
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: restore-drill
+  cancel-in-progress: false
+
+jobs:
+  drill:
+    name: Restore latest snapshot and verify
+    if: vars.AWS_RESTORE_ROLE_ARN != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_RESTORE_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+          role-duration-seconds: 5400
+      - name: Run the drill
+        env:
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          DB_INSTANCE: ${{ vars.DB_INSTANCE }}
+          DB_SECURITY_GROUP_ID: ${{ vars.DB_SECURITY_GROUP_ID }}
+          EC2_INSTANCE_ID: ${{ vars.EC2_INSTANCE_ID }}
+          MIGRATE_IMAGE_REPO: ${{ vars.MIGRATE_IMAGE_REPO }}
+        run: bash deploy/restore-drill.sh

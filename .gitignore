@@ -49,6 +49,9 @@ next-env.d.ts
 /playwright-report/
 /blob-report/
 
+# local email outbox (MAIL_TRANSPORT=file)
+/.mail-outbox/
+
 # terraform
 .terraform/
 *.tfstate

@@ -9,6 +9,9 @@ if [[ ! -f .next/standalone/server.js ]]; then
 fi
 cp -r .next/static .next/standalone/.next/
 cp -r public .next/standalone/
+# Emails land here as JSON for the specs to read (see e2e/helpers.ts)
+export MAIL_TRANSPORT=file MAIL_FILE_DIR="${E2E_MAIL_DIR:-$PWD/.mail-outbox}"
+rm -rf "$MAIL_FILE_DIR"
 
 cd .next/standalone
 export NODE_ENV=production HOSTNAME=127.0.0.1 PORT="${PORT:-3200}"
