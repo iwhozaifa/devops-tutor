@@ -146,8 +146,7 @@ The deploy job is skipped until `EC2_INSTANCE_ID` is set.
 
 ## Scaling beyond one instance
 
-The login and registration rate limiter keeps its counters in process memory (`src/lib/rate-limit.ts`). Before you put the app in an Auto Scaling group with more than one instance:
+Rate-limit counters are already shared through Postgres, so more instances need no app changes. Before you put the app in an Auto Scaling group with more than one instance:
 
-- Move the limiter to Postgres or ElastiCache.
 - Size `DB_POOL_MAX × instances` under the RDS `max_connections`.
 - Swap `deploy.sh` for a rolling deployment (for example an ASG instance refresh, or ECS).

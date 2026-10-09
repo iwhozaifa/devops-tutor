@@ -4,7 +4,8 @@ import { AuthError, CredentialsSignin } from "next-auth";
 import { signIn, signOut } from "./auth";
 import { db } from "./db";
 import bcrypt from "bcryptjs";
-import { clientIp, rateLimit } from "./rate-limit";
+import { clientIp } from "./client-ip";
+import { rateLimit } from "./rate-limit";
 import { loginSchema, registerSchema } from "./validation";
 
 const TOO_MANY = { error: "Too many attempts. Please try again later." };
@@ -21,7 +22,7 @@ export async function registerUser(formData: FormData) {
   }
   const { name, email, password } = parsed.data;
 
-  if (!rateLimit(`register:${await clientIp()}`, 5, 60 * 60 * 1000)) {
+  if (!(await rateLimit(`register:${await clientIp()}`, 5, 60 * 60 * 1000))) {
     return TOO_MANY;
   }
 

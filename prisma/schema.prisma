@@ -447,3 +447,14 @@ model Streak {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+// Fixed-window rate limit counters shared by every app instance. Created
+// UNLOGGED in its migration: losing counters on a crash is acceptable and
+// skipping the WAL makes the hot upsert cheaper.
+model RateLimitBucket {
+  key     String   @id
+  count   Int
+  resetAt DateTime
+
+  @@index([resetAt])
+}
