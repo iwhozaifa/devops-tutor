@@ -23,3 +23,12 @@ export async function login(page: Page, email: string, password = PASSWORD) {
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: /sign in/i }).click();
 }
+
+/** Grants the admin role directly in the E2E database. */
+export async function makeAdmin(email: string) {
+  const { Client } = await import("pg");
+  const client = new Client({ connectionString: process.env.E2E_DATABASE_URL });
+  await client.connect();
+  await client.query(`UPDATE "User" SET role = 'ADMIN' WHERE email = $1`, [email]);
+  await client.end();
+}
