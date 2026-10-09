@@ -18,6 +18,7 @@ import { xpProgress } from "@/lib/gamification";
 import { XpBar } from "@/components/gamification/XpBar";
 import { BadgeDisplay } from "@/components/gamification/BadgeDisplay";
 import { StreakCounter } from "@/components/gamification/StreakCounter";
+import { AccountDataSection } from "@/components/AccountDataSection";
 
 export const metadata: Metadata = { title: "Profile" };
 
@@ -332,6 +333,8 @@ export default async function ProfilePage() {
           </div>
         )}
       </section>
+
+      <AccountDataSection hasPassword={Boolean(user.passwordHash)} />
     </div>
   );
 }

@@ -30,10 +30,16 @@ const valueProps = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage({ searchParams }: { searchParams: Promise<{ deleted?: string }> }) {
+  const { deleted } = await searchParams;
   return (
     <div className="flex min-h-full flex-col">
       <Navbar />
+      {deleted === "1" && (
+        <div role="status" className="border-b bg-muted/60 px-4 py-3 text-center text-sm">
+          Your account and its data have been deleted.
+        </div>
+      )}
 
       {/* Hero */}
       <section className="flex flex-1 flex-col items-center justify-center px-4 py-16 text-center sm:px-6 sm:py-24">
@@ -78,7 +84,15 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="border-t px-4 py-6 text-center text-sm text-muted-foreground sm:px-6 sm:py-8">
-        DevOps Tutor &mdash; Built for engineers who ship.
+        <p>DevOps Tutor &mdash; Built for engineers who ship.</p>
+        <p className="mt-2 space-x-4">
+          <Link href="/privacy" className="hover:underline">
+            Privacy policy
+          </Link>
+          <Link href="/terms" className="hover:underline">
+            Terms of use
+          </Link>
+        </p>
       </footer>
     </div>
   );
