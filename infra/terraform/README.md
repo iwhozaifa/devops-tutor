@@ -11,6 +11,12 @@ The production stack from [docs/DEPLOYMENT.md](../../docs/DEPLOYMENT.md), as cod
 - SSM Parameter Store: every runtime setting under `/devops-tutor/prod/`, including a generated DB password and `AUTH_SECRET`
 - IAM: a least-privilege instance role, and a GitHub OIDC deploy role limited to the repo's `production` environment
 - SES domain identity, CloudWatch log group
+- CloudWatch alarms to an SNS email subscription, notifying on alarm and on recovery:
+  - ALB: 5xx count, unhealthy targets, p95 latency
+  - EC2 status checks
+  - RDS: CPU, free storage, connections
+  - app errors, from a metric filter on the JSON logs (`{ $.level = "error" }`)
+- An external uptime check: a Route 53 HTTPS health check on `/api/health/ready`, alarming in us-east-1, where Route 53 metrics live
 - AWS WAF on the ALB:
   - managed rule groups: common, known bad inputs, IP reputation. The 8 KB body-size rule only counts, because exam submissions can be larger.
   - a blocking rate limit of 300 requests per IP per 5 minutes on `/api/auth/`, `/login`, `/register` and `/forgot-password`
@@ -43,6 +49,7 @@ terraform apply tfplan
 After the first apply:
 1. Point the domain at `alb_dns_name` (Route 53 alias or CNAME).
 2. Publish the `ses_dkim_tokens` CNAMEs, then request SES production access.
-3. Copy `github_repository_variables` into the repository's Actions variables and create the `production` environment. The next push to `main` deploys.
+3. Confirm the two SNS email subscriptions (one for the main region, one for us-east-1) sent to `alarm_email`.
+4. Copy `github_repository_variables` into the repository's Actions variables and create the `production` environment. The next push to `main` deploys.
 
 The Terraform state contains the generated database password and `AUTH_SECRET`, so restrict access to the state bucket accordingly.
