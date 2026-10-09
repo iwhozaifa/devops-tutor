@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 import { randomUUID } from "node:crypto";
 
 export const PASSWORD = "e2e-password-123";
@@ -55,4 +55,15 @@ export async function latestMail(to: string): Promise<{ subject: string; text: s
 export function linkIn(mail: { text: string }): string {
   const url = new URL(mail.text.match(/https?:\/\/\S+/)![0]);
   return url.pathname + url.search;
+}
+
+/**
+ * Clicks an Enroll button and waits until the enrollment is saved, so a
+ * navigation right after cannot cancel the request.
+ */
+export async function enrollVia(page: Page, button: Locator) {
+  await Promise.all([
+    page.waitForResponse((r) => r.url().endsWith("/api/enrollments") && r.request().method() === "POST" && r.ok()),
+    button.click(),
+  ]);
 }

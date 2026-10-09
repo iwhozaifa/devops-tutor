@@ -1,11 +1,11 @@
 import { expect, test } from "./fixtures";
-import { register } from "./helpers";
+import { enrollVia, register } from "./helpers";
 
 test("enroll, complete day 1 and take its quiz", async ({ page }) => {
   await register(page);
 
   await page.goto("/subjects");
-  await page.getByRole("button", { name: "Enroll" }).first().click();
+  await enrollVia(page, page.getByRole("button", { name: "Enroll" }).first());
   await expect(page).toHaveURL(/\/subjects\/devops/);
 
   await page.goto("/subjects/devops/curriculum/1");
