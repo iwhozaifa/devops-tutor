@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { isEnrolled, notEnrolled } from "@/lib/enrollment";
 import { awardXp } from "@/lib/gamification";
 import { parseBody, taskSubmitSchema } from "@/lib/validation";
 
@@ -23,9 +24,13 @@ export async function POST(
   // Verify task exists and belongs to a published subject
   const task = await db.dailyTask.findFirst({
     where: { id: taskId, day: { module: { subject: { isPublished: true } } } },
+    include: { day: { select: { module: { select: { subjectId: true } } } } },
   });
   if (!task) {
     return NextResponse.json({ error: "Task not found" }, { status: 404 });
+  }
+  if (!(await isEnrolled(userId, task.day.module.subjectId))) {
+    return notEnrolled();
   }
 
   // Upsert submission

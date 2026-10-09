@@ -1,0 +1,6 @@
+domain_name     = "tutor.example.com"
+certificate_arn = "arn:aws:acm:eu-west-1:123456789012:certificate/00000000-0000-0000-0000-000000000000"
+github_repo     = "iwhozaifa/devops-tutor"
+alarm_email     = "ops@example.com"
+# mail_from     = "DevOps Tutor <no-reply@example.com>"
+# db_multi_az   = true

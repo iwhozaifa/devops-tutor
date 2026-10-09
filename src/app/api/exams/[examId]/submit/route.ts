@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { isEnrolled, notEnrolled } from "@/lib/enrollment";
 import {
   awardExamPassXp,
   processGamificationEvent,
@@ -27,11 +28,15 @@ export async function POST(
     where: { id: examId, certification: { subject: { isPublished: true } } },
     include: {
       questions: { orderBy: { sortOrder: "asc" } },
+      certification: { select: { subjectId: true } },
     },
   });
 
   if (!exam || exam.questions.length === 0) {
     return NextResponse.json({ error: "Exam not found" }, { status: 404 });
+  }
+  if (!(await isEnrolled(session.user.id, exam.certification.subjectId))) {
+    return notEnrolled();
   }
 
   // timeSpent is client-reported; clamp to the exam's time limit
