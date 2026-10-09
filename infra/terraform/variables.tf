@@ -59,3 +59,8 @@ variable "log_retention_days" {
   type    = number
   default = 30
 }
+
+variable "alarm_email" {
+  description = "Address subscribed to alarm notifications (confirm the SNS email after apply)"
+  type        = string
+}
