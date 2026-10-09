@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { readdirSync, readFileSync, rmSync } from "node:fs";
 import path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
 import { db } from "@/lib/db";
 import { consumeEmailToken, createEmailToken } from "@/lib/tokens";
 import { registerUser, resendVerificationEmail } from "@/lib/auth-actions";
@@ -95,7 +96,9 @@ describe("verification flow", () => {
     const user = await db.user.findUniqueOrThrow({ where: { email: "linus@example.test" } });
     expect(user.emailVerified).toBeInstanceOf(Date);
 
-    const again = JSON.stringify(await VerifyEmailPage({ searchParams: Promise.resolve({ token }) }));
+    const first = renderToStaticMarkup(await VerifyEmailPage({ searchParams: Promise.resolve({ token: "bogus" }) }));
+    expect(first).toContain("not valid");
+    const again = renderToStaticMarkup(await VerifyEmailPage({ searchParams: Promise.resolve({ token }) }));
     expect(again).toContain("already been used");
   });
 
