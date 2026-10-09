@@ -30,6 +30,11 @@ GitHub Actions ──OIDC──▶ ECR push ──▶ SSM send-command ──▶
 
 ## One-time AWS setup
 
+**Recommended:** apply the Terraform stack in [`infra/terraform`](../infra/terraform/README.md). It creates everything in sections 1–8 below, including the SSM parameters with a generated database password and `AUTH_SECRET`, and it is covered by offline tests in CI.
+
+The manual steps below describe the same resources, for reference or for a console setup.
+
+
 Use one region throughout. Names below are suggestions.
 
 ### 1. Network
@@ -76,7 +81,7 @@ Create two repositories: `devops-tutor` and `devops-tutor-migrate`. Add a lifecy
 - Listener 443: an ACM certificate for your domain, forwarding to the target group.
 - Listener 80: redirect to 443.
 - Target group: HTTP, port 3000, instance target.
-  - Health check path: `/api/health?ready=1`
+  - Health check path: `/api/health/ready`
   - Healthy threshold 2, interval 15s
 
 ### 6. Parameters (SSM Parameter Store, SecureString)

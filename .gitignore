@@ -48,3 +48,11 @@ next-env.d.ts
 /test-results/
 /playwright-report/
 /blob-report/
+
+# terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+backend.hcl
